@@ -3,18 +3,20 @@ import pandas as pd
 
 # Install dependencies as needed:
 # pip install kagglehub[pandas-datasets]
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
+
+#import kagglehub
+#from kagglehub import KaggleDatasetAdapter
 
 # Set the path to the file you'd like to load
 file_path = ""
-
+"""
 # Load the latest version
 df = kagglehub.load_dataset(
   KaggleDatasetAdapter.PANDAS,
   "prasoonkottarathil/btcinusd",
   file_path,
 )
+"""
 
 def pad(P, N):
   # where P is your array of data points
@@ -58,4 +60,4 @@ def wma(P, N, kernel):
 # We have also seen an example of this in Figure 5. In both cases we can see
 # intuitively that the crossover points would seem to be reasonable places to buy and sell.
 
-def compound(k)
+#def compound(k)
