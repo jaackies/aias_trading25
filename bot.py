@@ -16,6 +16,8 @@ df = kagglehub.load_dataset(
   file_path,
 )
 
+## ^ may need to remove data reading in, as that is being done by the evavluation code
+
 def pad(P, N):
   # where P is your array of data points
   # and N is the # data pt.
@@ -47,6 +49,7 @@ def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
   return np.divide((sma + lma + ema), weights)
 
 def sign_filter(N):
+  # to convolve with data in order to figure out signal changing signs
   filtered = np.full(N, 0)
   negative = filtered == 0
   positive = filtered == 1 
@@ -54,10 +57,13 @@ def sign_filter(N):
   filtered[negative] = -0.5
   return filtered
 
-def subtract(high, low): #subtracts high signal from low signal
+def subtract(high, low):
+  #subtracts high signal from low signal
   return np.subtract(high,low)
 
 def buysell_signals(high_signal, low_signal):
+  # obtains buy/sell signals from a high frequency signal and a low frequency signal
+  # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
   signals = np.convolve(difference, sign_filter(difference))
   final_signals = np.full(data, "none")
@@ -83,7 +89,10 @@ def get_signals_smaema(data, lowN, EN, Esf):
   return buysell_signals(high_signal, low_signal)
   
 def get_signals_complex(data, high, low):
-  # high and low are vectors [w1, w2, w3, d1, d2, d3, sf] for the vector to optimise
+  # high and low are arrays [w1, w2, w3, d1, d2, d3, sf], defining parameters of
+  # weight, length of windows and smoothing factors of the complex frequency
+  # high is the array defining the paramters for high frequency
+  # low is the array defining the parameteres for low frequency
   high_signal = complex_freq(data, high[0], high[1], high[2], high[3], high[4], high[5], high[6])
   low_signal = complex_freq(data, low[0], low[1], low[2], low[3], low[4], low[5], low[6])
   return buysell_signals(high_signal, low_signal)
