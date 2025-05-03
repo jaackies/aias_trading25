@@ -8,7 +8,9 @@ from problem import sphere
 # num_agents: initial number of agents. population of whales
 # max_iter: iterations to optimize
 # integer_dims：If values of some dims should be integer
-best, score = whale_optimization(fitness_func=sphere,dim=3,bounds=[(-5,5),(3, 5),(1, 3)],num_agents=2,max_iter=5)
+best, score = whale_optimization(fitness_func=sphere,dim=3,bounds=[(-5,5),(-5, 5),(-5,5)],num_agents= 10,max_iter=100)
+# low: 11 - 40
+# high: 1-10
 
 print(f"Best solution: {best.tolist()}")
 print(f"Best score: {score}")
