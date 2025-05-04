@@ -9,14 +9,15 @@ import pandas as pd
 
 # Set the path to the file you'd like to load
 file_path = ""
-"""
+
 # Load the latest version
 df = kagglehub.load_dataset(
   KaggleDatasetAdapter.PANDAS,
   "prasoonkottarathil/btcinusd",
   file_path,
 )
-"""
+
+## ^ may need to remove data reading in, as that is being done by the evavluation code
 
 def pad(P, N):
   # where P is your array of data points
@@ -41,23 +42,60 @@ def wma(P, N, kernel):
   # kernel = filter method called on N
   return np.convolve(pad(P,N), kernel, "valid")
 
+def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
+  sma = np.multiply(wma(data, d1, sma_filter(data)), w1)
+  lma = np.multiply(wma(data, d2, lma_filter(data)), w2)
+  ema = np.multiply(wma(data, d3, ema_filter(sf, data)), w3)
+  weights = w1 + w2 + w3
+  return np.divide((sma + lma + ema), weights)
 
-# There are two most common approaches to choosing the two signals.
-# 
-# In both you choose two signals/moving averages, one to be your responsive signal,
-# and one to be your smoothed signal
-# 
-# The first is to choose two moving averages of the same type
-# but different durations (or window sizes N), with the smaller duration being
-# the more responsive.
-# We have already seen from Figure 3, for example, that a shorter term
-# (smaller N) SMA reacts more quickly to higher frequency changes in the input than
-# a longer term SMA.
-# 
-# The second is to choose a different type of WMA that is more responsive. 
-# The most common would be to choose an EMA for the more responsive signal,
-# and an SMA for the smoothed trend signal.
-# We have also seen an example of this in Figure 5. In both cases we can see
-# intuitively that the crossover points would seem to be reasonable places to buy and sell.
+def sign_filter(N):
+  # to convolve with data in order to figure out signal changing signs
+  filtered = np.full(N, 0)
+  negative = filtered == 0
+  positive = filtered == 1 
+  filtered[positive] = 0.5
+  filtered[negative] = -0.5
+  return filtered
 
-#def compound(k)
+def subtract(high, low):
+  #subtracts high signal from low signal
+  return np.subtract(high,low)
+
+def buysell_signals(high_signal, low_signal):
+  # obtains buy/sell signals from a high frequency signal and a low frequency signal
+  # returns python array continaing strings of "buy", "sell" or "none"
+  difference = subtract(high_signal, low_signal)
+  signals = np.convolve(difference, sign_filter(difference))
+  final_signals = np.full(data, "none")
+  buy = signals > 0.5
+  sell = signals < -0.5
+  final_signals[buy] = "buy"
+  final_signals[sell] = "sell"
+  # following line is for dependent on what our evaluation code takes
+  return final_signals.tolist()
+
+def get_signals_sma2(data, highN, lowN):
+  # get buy and sell signals by using two SMA filters
+  # one with window size highN that is small for high freq signal
+  # one with window size lowN that is larger for low freq signal
+  high_signal = wma(data, highN, sma_filter(highN))
+  low_signal = wma(data, lowN, sma_filter(lowN))
+  return buysell_signals(high_signal, low_signal)
+
+def get_signals_smaema(data, lowN, EN, Esf):
+  # get buy and sell signals by using a SMA filter for low freq and EMA for high frequency
+  high_signal = wma(data, highN, ema_filter(Esf, EN))
+  low_signal = wma(data, lowN, sma_filter(lowN))
+  return buysell_signals(high_signal, low_signal)
+  
+def get_signals_complex(data, high, low):
+  # high and low are arrays [w1, w2, w3, d1, d2, d3, sf], defining parameters of
+  # weight, length of windows and smoothing factors of the complex frequency
+  # high is the array defining the paramters for high frequency
+  # low is the array defining the parameteres for low frequency
+  high_signal = complex_freq(data, high[0], high[1], high[2], high[3], high[4], high[5], high[6])
+  low_signal = complex_freq(data, low[0], low[1], low[2], low[3], low[4], low[5], low[6])
+  return buysell_signals(high_signal, low_signal)
+
+# TODO: test running this -- reference evaluation code to see how the data is read in
