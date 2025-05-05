@@ -5,14 +5,15 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
     X = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     # np.random.uniform(a,b,size) Sample random values from the interval [a,b), and generate an array with the shape specified by size(like: num_agents rows; dim columns)
     # trajectory = []
-    formatted = [[int(x), int(y)] for x, y in X]
-    print(formatted)
-    best = formatted[0].copy() #initialize optimal solution
+    x = apply_integer_constraints(X, integer_dims)
+    # formatted = [[x, y] for x, y in x]
+    # print(formatted)
+    best = X[0].copy() #initialize optimal solution
     print(f"Initial best:  {best}")
     best_score = fitness_func(*best)
     print(f"Initial best score: {best_score}")
     for i in range(num_agents): # compare to find the current optimal solution
-        score = fitness_func(X[i])
+        score = fitness_func(*X[i])
         if score < best_score:
             best = X[i].copy()
             best_score = score
@@ -47,7 +48,7 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
                 X[i][d] = np.clip(X[i][d], bounds[d][0], bounds[d][1])
                 if integer_dims and d in integer_dims:
                     X[i][d] = int(round(X[i][d]))
-            score = fitness_func(X[i]) #Calculate the fitness of each search agent
+            score = fitness_func(*X[i]) #Calculate the fitness of each search agent
             # trajectory.append(X.copy())
             print("Whales " + str(i) + ": ")
             print(f"Solution: {X[i].tolist()}, Score: {score}")
@@ -56,3 +57,9 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
                 best_score = score
 
     return best, best_score
+
+
+def apply_integer_constraints(x, integer_dims):
+    for dim in integer_dims:
+        x[:, dim] = np.round(x[:, dim]).astype(int)
+    return x

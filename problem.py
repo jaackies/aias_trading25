@@ -41,12 +41,13 @@ def bot_fitness_func(high_window, low_window): # change bot_signals to high_freq
     # intialise bot, use training dataset for optimisation algorithms fitness functions
     close_price = pd.read_csv('training.csv')['close']
     # bot_signals = bot.get_signals_sma2(close_price, high_window, low_window) #need to think about how to call 2 other bot algorithms
-    bot_signals = bot.get_signals_sma2(close_price, 20, 10)
-    print(bot_signals)
+    bot_signals = bot.get_signals_sma2(close_price, high_window, low_window)
+    # print(bot_signals)
     # initial values
     cash = 1000
     fee=0.03
     bitcoin = 0.0
+    print(f"initial cash: {cash}")
 
     #loop through the time length
     for i in range(len(close_price)-1):
@@ -65,5 +66,6 @@ def bot_fitness_func(high_window, low_window): # change bot_signals to high_freq
     if bitcoin>0:
         cash = bitcoin * last_close * (1-fee)
         bitcoin =0
-    
+
+    # debug  
     return cash

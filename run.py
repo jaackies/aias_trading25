@@ -9,7 +9,7 @@ from visual import animate_woa_contour
 # num_agents: initial number of agents. population of whales
 # max_iter: iterations to optimize
 # integer_dims：If values of some dims should be integer
-best, score= whale_optimization(fitness_func=bot_fitness_func,dim=2,bounds=[(1,10),(11,40)],num_agents= 5,max_iter= 100, integer_dims= [0,1])
+best, score= whale_optimization(fitness_func=bot_fitness_func,dim=2,bounds=[(1,10),(11,40)],num_agents= 5,max_iter= 5, integer_dims= [0,1])
 # low: 11 - 40
 # high: 1-10
 # animate_woa_contour(trajectory, sphere, bounds=[(-5, 5), (-5, 5)])

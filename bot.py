@@ -19,6 +19,8 @@ df = kagglehub.load_dataset(
 )
 """
 
+np.set_printoptions(threshold=np.inf)
+
 ## ^ may need to remove data reading in, as that is being done by the evavluation code
 
 def pad(P, N):
@@ -68,13 +70,19 @@ def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
-  signals = np.convolve(difference, sign_filter(len(difference)))
+  # print(f"difference: {difference}")
+
+  # signals = np.convolve(difference, sign_filter(len(difference)))
+  signals = np.convolve(difference, [0.5, -0.5])
+
+  print(f"Convolved signals: {signals}")
   final_signals = np.full(len(signals), "none")
-  buy = signals > 0.5
-  sell = signals < -0.5
+  buy = (signals > 0.5) & (np.roll(signals, 1) <= 0.5)
+  sell = (signals < -0.5) & (np.roll(signals, 1) >= -0.5)
   final_signals[buy] = "buy"
   final_signals[sell] = "sell"
   # following line is for dependent on what our evaluation code takes
+  print(f"final_signals: {final_signals}")
   return final_signals.tolist()
 
 def get_signals_sma2(data, highN, lowN):
@@ -82,7 +90,9 @@ def get_signals_sma2(data, highN, lowN):
   # one with window size highN that is small for high freq signal
   # one with window size lowN that is larger for low freq signal
   high_signal = wma(data, highN, sma_filter(highN))
+  # print(f"high_signal： {high_signal}")
   low_signal = wma(data, lowN, sma_filter(lowN))
+  # print(f"low signal: {low_signal}")
   return buysell_signals(high_signal, low_signal)
 
 def get_signals_smaema(data, lowN, EN, Esf):
