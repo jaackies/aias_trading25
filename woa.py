@@ -5,8 +5,12 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
     X = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     # np.random.uniform(a,b,size) Sample random values from the interval [a,b), and generate an array with the shape specified by size(like: num_agents rows; dim columns)
     # trajectory = []
-    best = X[0].copy() #initialize optimal solution
-    best_score = fitness_func(best)
+    formatted = [[int(x), int(y)] for x, y in X]
+    print(formatted)
+    best = formatted[0].copy() #initialize optimal solution
+    print(f"Initial best:  {best}")
+    best_score = fitness_func(*best)
+    print(f"Initial best score: {best_score}")
     for i in range(num_agents): # compare to find the current optimal solution
         score = fitness_func(X[i])
         if score < best_score:
