@@ -71,12 +71,18 @@ def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
-  signals = np.convolve(difference, sign_filter(len(difference)))
+  #signals = np.convolve(difference, sign_filter(len(difference))) - Jackie's code
+  # this is the changed one - not the fixed one
+  signs = np.sign(difference)
+  signals = np.diff(signs)
+
   final_signals = np.full(len(signals), "none")
-  buy = signals > 0.5
-  sell = signals < -0.5
-  final_signals[buy] = "buy"
-  final_signals[sell] = "sell"
+  #buy = signals > 0.5 -Jackie's code
+  #sell = signals < -0.5 - Jackie's code
+  # final_signals[buy] = "buy" - Jackie's code
+  final_signals[signals > 0.5] = "buy"
+  # final_signals[sell] = "sell" - Jackie's code
+  final_signals[signals < -0.5] = "sell"
   # following line is for dependent on what our evaluation code takes
   return final_signals.tolist()
 
