@@ -11,11 +11,13 @@ import pandas as pd
 file_path = ""
 
 # Load the latest version
+"""
 df = kagglehub.load_dataset(
   KaggleDatasetAdapter.PANDAS,
   "prasoonkottarathil/btcinusd",
   file_path,
 )
+"""
 
 ## ^ may need to remove data reading in, as that is being done by the evavluation code
 
@@ -67,7 +69,7 @@ def buysell_signals(high_signal, low_signal):
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
   signals = np.convolve(difference, sign_filter(difference))
-  final_signals = np.full(data, "none")
+  final_signals = np.full(signals, "none")
   buy = signals > 0.5
   sell = signals < -0.5
   final_signals[buy] = "buy"
