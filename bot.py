@@ -33,12 +33,15 @@ def sma_filter(N):
   return np.ones(N)/N
 
 def lma_filter(N):
-  return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
+  #return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
+  return (np.full(N, 2)-(np.arange(N)/N))/(N+np.ones(N))
 # k is increasing from k=0 to k=n-1 (where n is the number of points in N)
 
 def ema_filter(sf, N):
   # sf = alpha = smoothing factor
-  return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size))
+  #return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size)) - Jackie's original code
+  return sf * (1 - sf) ** np.arange(N)
+
 
 def wma(P, N, kernel):
   # P = array of data points
@@ -47,9 +50,9 @@ def wma(P, N, kernel):
   return np.convolve(pad(P,N), kernel, "valid")
 
 def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
-  sma = np.multiply(wma(data, d1, sma_filter(data)), w1)
-  lma = np.multiply(wma(data, d2, lma_filter(data)), w2)
-  ema = np.multiply(wma(data, d3, ema_filter(sf, data)), w3)
+  sma = np.multiply(wma(data, d1, sma_filter(d1)), w1)
+  lma = np.multiply(wma(data, d2, lma_filter(d2)), w2)
+  ema = np.multiply(wma(data, d3, ema_filter(sf, d3)), w3)
   weights = w1 + w2 + w3
   return np.divide((sma + lma + ema), weights)
 
@@ -70,17 +73,18 @@ def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
-  # print(f"difference: {difference}")
+  #signals = np.convolve(difference, sign_filter(len(difference))) - Jackie's code
+  # this is the changed one - not the fixed one
+  signs = np.sign(difference)
+  signals = np.diff(signs)
 
-  # signals = np.convolve(difference, sign_filter(len(difference)))
-  signals = np.convolve(difference, [0.5, -0.5])
-
-  print(f"Convolved signals: {signals}")
   final_signals = np.full(len(signals), "none")
-  buy = (signals > 0.5) & (np.roll(signals, 1) <= 0.5)
-  sell = (signals < -0.5) & (np.roll(signals, 1) >= -0.5)
-  final_signals[buy] = "buy"
-  final_signals[sell] = "sell"
+  #buy = signals > 0.5 -Jackie's code
+  #sell = signals < -0.5 - Jackie's code
+  # final_signals[buy] = "buy" - Jackie's code
+  final_signals[signals > 0.5] = "buy"
+  # final_signals[sell] = "sell" - Jackie's code
+  final_signals[signals < -0.5] = "sell"
   # following line is for dependent on what our evaluation code takes
   print(f"final_signals: {final_signals}")
   return final_signals.tolist()
@@ -95,9 +99,9 @@ def get_signals_sma2(data, highN, lowN):
   # print(f"low signal: {low_signal}")
   return buysell_signals(high_signal, low_signal)
 
-def get_signals_smaema(data, lowN, EN, Esf):
+def get_signals_smaema(data, highN, lowN, Esf):
   # get buy and sell signals by using a SMA filter for low freq and EMA for high frequency
-  high_signal = wma(data, highN, ema_filter(Esf, EN))
+  high_signal = wma(data, highN, ema_filter(Esf, highN))
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
   

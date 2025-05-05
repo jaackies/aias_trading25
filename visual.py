@@ -1,27 +1,43 @@
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import numpy as np
+import matplotlib.pyplot as plt
 
+def plot_sma_cross(price, short_window=10, long_window=30):
+    short_sma = np.convolve(price, np.ones(short_window)/short_window, mode='valid')
+    long_sma = np.convolve(price, np.ones(long_window)/long_window, mode='valid')
 
-def animate_woa_contour(trajectory, fitness_func, bounds, interval=500):
-    fig, ax = plt.subplots()
+    # 让两个 SMA 对齐长度（截取相同部分）
+    min_len = min(len(short_sma), len(long_sma))
+    short_sma = short_sma[-min_len:]
+    long_sma = long_sma[-min_len:]
+    price_cut = price[-min_len:]
 
-    # 构建背景等高线
-    x = np.linspace(bounds[0][0], bounds[0][1], 200)
-    y = np.linspace(bounds[1][0], bounds[1][1], 200)
-    X_grid, Y_grid = np.meshgrid(x, y)
-    Z = np.array([fitness_func([xx, yy]) for xx, yy in zip(X_grid.ravel(), Y_grid.ravel())]).reshape(X_grid.shape)
-    contour = ax.contourf(X_grid, Y_grid, Z, cmap='Blues')
-    plt.colorbar(contour)
+    # 差值判断买卖
+    difference = short_sma - long_sma
+    signals = np.full(min_len, "none", dtype=object)
 
-    scat = ax.scatter([], [], color='black')
+    for i in range(1, min_len):
+        if difference[i-1] < 0 and difference[i] > 0:
+            signals[i] = "buy"
+        elif difference[i-1] > 0 and difference[i] < 0:
+            signals[i] = "sell"
 
-    def update(frame):
-        positions = trajectory[frame]
-        scat.set_offsets(positions[:, :2])  # 只画前两个维度
-        ax.set_title(f"Iteration {frame}")
-        return scat,
+    # 可视化
+    plt.figure(figsize=(12,6))
+    plt.plot(price_cut, label="Price", color='gray', alpha=0.4)
+    plt.plot(short_sma, label=f"SMA Short ({short_window})", color='blue')
+    plt.plot(long_sma, label=f"SMA Long ({long_window})", color='orange')
 
-    ani = animation.FuncAnimation(fig, update, frames=len(trajectory), interval=interval, blit=False)
-    ani.save("woa_animation.gif", writer="pillow")
+    # 标记买卖点
+    for i in range(1, min_len):
+        if signals[i] == "buy":
+            plt.scatter(i, price_cut[i], marker='^', color='green', label='Buy' if i == 1 else "")
+        elif signals[i] == "sell":
+            plt.scatter(i, price_cut[i], marker='v', color='red', label='Sell' if i == 1 else "")
+
+    plt.title("SMA Crossover Buy/Sell Signal")
+    plt.xlabel("Time")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
     plt.show()
