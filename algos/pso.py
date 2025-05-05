@@ -7,13 +7,14 @@ class PSOA(BaseAlgo):
     Particle Swarm Optimisation (PSO) algorithm.
     """
 
-    def _init_particles(self):
+    def __init_particles(self, num_particles):
+        """
+        Initialize the particles in the swarm.
+        :param num_particles: Number of particles in the swarm.
+        """
         particles = []
-        for _ in range(self.num_particles):
-            position = [
-                np.random.randint(self.bounds[0][0], self.bounds[0][1] + 1),  # fast_sma
-                np.random.randint(self.bounds[1][0], self.bounds[1][1] + 1),  # slow_sma
-            ]
+        for _ in range(num_particles):
+            position = [np.random.randint(low, high + 1) for low, high in self.bounds]
             velocity = [np.random.uniform(-1, 1) for _ in range(2)]
             particles.append(
                 {
@@ -25,56 +26,46 @@ class PSOA(BaseAlgo):
             )
         return particles
 
-    def __init__(self, eval_func, bounds, *, num_particles=30, max_iter=50):
-        super().__init__(eval_func, bounds)
-        self.num_particles = num_particles
-        self.max_iter = max_iter
+    def _algo_init(self, _, *, num_particles=30):
+        """
+        Initialize the PSO algorithm with the given parameters.
+        :param num_particles: Number of particles in the swarm.
+        """
         self.w = 0.5  # Inertia weight
         self.c1 = 1.5  # Cognitive parameter
         self.c2 = 1.5  # Social parameter
-        self.particles = self._init_particles()
-        self.global_best_position = None
-        self.global_best_fitness = -np.inf
 
-    def optimize(self):
-        for _ in range(self.max_iter):
-            for particle in self.particles:
-                # Evaluate fitness
-                fitness_value = self.eval_func(particle["position"])
+        self.particles = self.__init_particles(num_particles)
 
-                # Update particle's best
-                if fitness_value > particle["best_fitness"]:
-                    particle["best_fitness"] = fitness_value
-                    particle["best_position"] = particle["position"].copy()
+    def _algo_iter(self, _):
+        for particle in self.particles:
+            # Evaluate fitness and update global best
+            fitness_value = self._eval_and_update(particle["position"])
 
-                # Update global best
-                if fitness_value > self.global_best_fitness:
-                    self.global_best_fitness = fitness_value
-                    self.global_best_position = particle["position"].copy()
+            # Update particle's best
+            if fitness_value > particle["best_fitness"]:
+                particle["best_fitness"] = fitness_value
+                particle["best_position"] = particle["position"].copy()
 
-            # Update velocities and positions
-            for particle in self.particles:
-                for i in range(len(particle["position"])):
-                    r1, r2 = np.random.rand(), np.random.rand()
-                    particle["velocity"][i] = (
-                        self.w * particle["velocity"][i]
-                        + self.c1
-                        * r1
-                        * (particle["best_position"][i] - particle["position"][i])
-                        + self.c2
-                        * r2
-                        * (self.global_best_position[i] - particle["position"][i])
-                    )
+        # Update velocities and positions
+        for particle in self.particles:
+            for i in range(len(particle["position"])):
+                r1, r2 = np.random.rand(), np.random.rand()
+                particle["velocity"][i] = (
+                    self.w * particle["velocity"][i]
+                    + self.c1
+                    * r1
+                    * (particle["best_position"][i] - particle["position"][i])
+                    + self.c2 * r2 * (self.best[i] - particle["position"][i])
+                )
 
-                    # Update position
-                    particle["position"][i] += particle["velocity"][i]
+                # Update position
+                particle["position"][i] += particle["velocity"][i]
 
-                    # Bound the position
-                    particle["position"][i] = max(
-                        self.bounds[i][0],
-                        min(self.bounds[i][1], particle["position"][i]),
-                    )
-                    if i in [0, 1]:  # fast_sma and slow_sma should be integers
-                        particle["position"][i] = round(particle["position"][i])
-
-        return self.global_best_position, self.global_best_fitness
+                # Bound the position
+                particle["position"][i] = max(
+                    self.bounds[i][0],
+                    min(self.bounds[i][1], particle["position"][i]),
+                )
+                if i in self.integer_dims:  # fast_sma and slow_sma should be integers
+                    particle["position"][i] = round(particle["position"][i])

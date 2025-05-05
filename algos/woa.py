@@ -8,60 +8,55 @@ class WOA(BaseAlgo):
     Whale Optimization Algorithm (WOA) for optimization problems.
     """
 
-    # TODO: put default values for these parameters
-    def optimize(self, *, dim, num_agents, max_iter, integer_dims=None):
-        a = 2
-        X = np.array(
+    def _algo_init(self, max_iter, *, num_agents=30):
+        """
+        Initialize the WOA algorithm with the given parameters.
+        :param max_iter: Maximum number of iterations.
+        :param num_agents: Number of agents (whales).
+        :param integer_dims: List of indices for dimensions that should be treated as integers.
+        """
+        self.num_agents = num_agents
+
+        self.a = 2
+        self.a_dec_v = 2 / max_iter
+        # Initialize the whales positions (which are initial solutions)
+        self.X = np.array(
             [np.random.uniform(low, high, num_agents) for (low, high) in self.bounds]
-        ).T  # Initialize the whales positions (which are intial solutions)
-        # np.random.uniform(a,b,size) Sample random values from the interval [a,b), and generate an array with the shape specified by size(like: num_agents rows; dim columns)
-        best = X[0].copy()  # initialize optimal solution
-        best_score = self.eval_func(best)
-        for i in range(num_agents):  # compare to find the current optimal solution
-            score = self.eval_func(X[i])
-            if score < best_score:
-                best = X[i].copy()
-                best_score = score
+        ).T
+        for i in range(num_agents):
+            self._eval_and_update(self.X[i])
 
-        for t in range(max_iter):  # while (t < maximum number of iterations)
-            a = 2 - t * (
-                2 / max_iter
-            )  # calculate a. make sure a is linearly decreased from 2 to 0
-            print("Iteration：" + str(t))
+    def _algo_iter(self, _):
+        for i in range(self.num_agents):
+            r = np.random.rand(self.dim)
+            A = 2 * self.a * r - self.a  # Update A
+            C = 2 * r  # Update C
+            p = np.random.rand()
 
-            for i in range(num_agents):
-                r = np.random.rand(dim)
-                A = 2 * a * r - a  # Update A
-                C = 2 * r  # Update C
-                p = np.random.rand()
+            if p < 0.5:
+                if np.linalg.norm(A) >= 1:  # Exploration phase
+                    X_rand = self.X[np.random.randint(0, self.num_agents)]
+                    D = np.abs(C * X_rand - self.X[i])
+                    self.X[i] = X_rand - A * D
+                else:  # Exploitation phase - Shrinking encircling mechanism
+                    D = np.abs(C * self.best - self.X[i])
+                    self.X[i] = self.best - A * D
+            else:  # if p >= 0.5；Exploitation phase - Spiral updating position
+                D = np.abs(self.best - self.X[i])
+                b = 1
+                l = np.random.uniform(-1, 1, self.dim)
+                self.X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + self.best
 
-                if p < 0.5:  # if p < 0.5
-                    if np.linalg.norm(A) >= 1:  # Exploration phase
-                        rand_index = np.random.randint(0, num_agents)
-                        X_rand = X[rand_index]
-                        D = np.abs(C * X_rand - X[i])
-                        X[i] = X_rand - A * D
-                    else:  # Exploitation phase - Shrinking encircling mechanism
-                        D = np.abs(C * best - X[i])
-                        X[i] = best - A * D
-                else:  # if p >= 0.5；Exploitation phase - Spiral updating position
-                    D = np.abs(best - X[i])
-                    b = 1
-                    l = np.random.uniform(-1, 1, dim)  # Update l
-                    X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + best
+            # Check if any search agent goes beyond the search space and amend it
+            for d in range(self.dim):
+                self.X[i][d] = np.clip(
+                    self.X[i][d], self.bounds[d][0], self.bounds[d][1]
+                )
+                if d in self.integer_dims:
+                    self.X[i][d] = int(round(self.X[i][d]))
 
-                # Check if any search agent goes beyond the search space and amend it
-                for d in range(dim):
-                    X[i][d] = np.clip(X[i][d], self.bounds[d][0], self.bounds[d][1])
-                    if integer_dims and d in integer_dims:
-                        X[i][d] = int(round(X[i][d]))
-                score = self.eval_func(
-                    X[i]
-                )  # Calculate the fitness of each search agent
-                print("Whales " + str(i) + ": ")
-                print(f"Solution: {X[i].tolist()}, Score: {score}")
-                if score < best_score:  # Update X* if there is a better solution
-                    best = X[i].copy()
-                    best_score = score
+            # Calculate the fitness of each search agent
+            score = self._eval_and_update(self.X[i])
+            print(f"\tWhale: {i}, Score: {score}, Solution: {self.X[i]}")
 
-        return best, best_score
+        self.a -= self.a_dec_v
