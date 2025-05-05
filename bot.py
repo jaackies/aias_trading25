@@ -31,12 +31,15 @@ def sma_filter(N):
   return np.ones(N)/N
 
 def lma_filter(N):
-  return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
+  #return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
+  return (np.full(N, 2)-(np.arange(N)/N))/(N+np.ones(N))
 # k is increasing from k=0 to k=n-1 (where n is the number of points in N)
 
 def ema_filter(sf, N):
   # sf = alpha = smoothing factor
-  return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size))
+  #return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size)) - Jackie's original code
+  return sf * (1 - sf) ** np.arange(N)
+
 
 def wma(P, N, kernel):
   # P = array of data points
@@ -45,9 +48,9 @@ def wma(P, N, kernel):
   return np.convolve(pad(P,N), kernel, "valid")
 
 def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
-  sma = np.multiply(wma(data, d1, sma_filter(data)), w1)
-  lma = np.multiply(wma(data, d2, lma_filter(data)), w2)
-  ema = np.multiply(wma(data, d3, ema_filter(sf, data)), w3)
+  sma = np.multiply(wma(data, d1, sma_filter(d1)), w1)
+  lma = np.multiply(wma(data, d2, lma_filter(d2)), w2)
+  ema = np.multiply(wma(data, d3, ema_filter(sf, d3)), w3)
   weights = w1 + w2 + w3
   return np.divide((sma + lma + ema), weights)
 
@@ -85,9 +88,9 @@ def get_signals_sma2(data, highN, lowN):
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
 
-def get_signals_smaema(data, lowN, EN, Esf):
+def get_signals_smaema(data, highN, lowN, Esf):
   # get buy and sell signals by using a SMA filter for low freq and EMA for high frequency
-  high_signal = wma(data, highN, ema_filter(Esf, EN))
+  high_signal = wma(data, highN, ema_filter(Esf, highN))
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
   
