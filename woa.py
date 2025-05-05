@@ -4,6 +4,7 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
     a = 2
     X = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     # np.random.uniform(a,b,size) Sample random values from the interval [a,b), and generate an array with the shape specified by size(like: num_agents rows; dim columns)
+    # trajectory = []
     best = X[0].copy() #initialize optimal solution
     best_score = fitness_func(best)
     for i in range(num_agents): # compare to find the current optimal solution
@@ -14,7 +15,7 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
 
     for t in range(max_iter): # while (t < maximum number of iterations)
         a = 2 - t * (2 / max_iter) # calculate a. make sure a is linearly decreased from 2 to 0
-        print("Iteration：" + str(t))
+        print("Iteration: " + str(t))
 
         for i in range(num_agents):
             r = np.random.rand(dim)
@@ -43,6 +44,7 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
                 if integer_dims and d in integer_dims:
                     X[i][d] = int(round(X[i][d]))
             score = fitness_func(X[i]) #Calculate the fitness of each search agent
+            # trajectory.append(X.copy())
             print("Whales " + str(i) + ": ")
             print(f"Solution: {X[i].tolist()}, Score: {score}")
             if score < best_score: # Update X* is there is a better solution
