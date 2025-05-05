@@ -68,8 +68,8 @@ def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
-  signals = np.convolve(difference, sign_filter(difference))
-  final_signals = np.full(signals, "none")
+  signals = np.convolve(difference, sign_filter(len(difference)))
+  final_signals = np.full(len(signals), "none")
   buy = signals > 0.5
   sell = signals < -0.5
   final_signals[buy] = "buy"
