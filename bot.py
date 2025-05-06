@@ -40,7 +40,7 @@ def buysell_signals(high_signal, low_signal):
   shifts = signs != shifted
   pos_filter = np.logical_and(shifts, signs == 1)
   neg_filter = np.logical_and(shifts, signs == -1)
-  final_signals = np.full(P.shape, "none")
+  final_signals = np.full(signs.shape, "none")
   final_signals[pos_filter] = "buy"
   final_signals[neg_filter] = "sell"
   return final_signals.tolist()
@@ -54,8 +54,10 @@ def get_signals_sma2(data, highN, lowN):
   return buysell_signals(high_signal, low_signal)
 
 def get_signals_smaema(data, lowN, EN, Esf):
-  # get buy and sell signals by using a SMA filter for low freq and EMA for high frequency
-  high_signal = wma(data, highN, ema_filter(Esf, EN))
+  # get buy and sell signals by using a
+  # SMA filter for low freq (lowN = larger window size) and
+  # EMA for high frequency (EN = smaller window size, Esf = smoothing factor)
+  high_signal = wma(data, EN, ema_filter(Esf, EN))
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
   
@@ -67,5 +69,3 @@ def get_signals_complex(data, high, low):
   high_signal = complex_freq(data, high[0], high[1], high[2], high[3], high[4], high[5], high[6])
   low_signal = complex_freq(data, low[0], low[1], low[2], low[3], low[4], low[5], low[6])
   return buysell_signals(high_signal, low_signal)
-
-# TODO: test running this -- reference evaluation code to see how the data is read in
