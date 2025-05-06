@@ -2,7 +2,7 @@ from algos.base import BaseAlgo
 import numpy as np
 
 
-class PSOA(BaseAlgo):
+class PSO(BaseAlgo):
     """
     Particle Swarm Optimisation (PSO) algorithm.
     """
@@ -56,7 +56,7 @@ class PSOA(BaseAlgo):
                     + self.c1
                     * r1
                     * (particle["best_position"][i] - particle["position"][i])
-                    + self.c2 * r2 * (self.best[i] - particle["position"][i])
+                    + self.c2 * r2 * (self.best_params[i] - particle["position"][i])
                 )
 
                 # Update position

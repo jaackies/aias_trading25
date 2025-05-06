@@ -39,13 +39,13 @@ class WOA(BaseAlgo):
                     D = np.abs(C * X_rand - self.X[i])
                     self.X[i] = X_rand - A * D
                 else:  # Exploitation phase - Shrinking encircling mechanism
-                    D = np.abs(C * self.best - self.X[i])
-                    self.X[i] = self.best - A * D
+                    D = np.abs(C * self.best_params - self.X[i])
+                    self.X[i] = self.best_params - A * D
             else:  # if p >= 0.5；Exploitation phase - Spiral updating position
-                D = np.abs(self.best - self.X[i])
+                D = np.abs(self.best_params - self.X[i])
                 b = 1
                 l = np.random.uniform(-1, 1, self.dim)
-                self.X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + self.best
+                self.X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + self.best_params
 
             # Check if any search agent goes beyond the search space and amend it
             for d in range(self.dim):
@@ -57,6 +57,6 @@ class WOA(BaseAlgo):
 
             # Calculate the fitness of each search agent
             score = self._eval_and_update(self.X[i])
-            print(f"\tWhale: {i}, Score: {score}, Solution: {self.X[i]}")
+            # print(f"\tWhale: {i}, Score: {score}, Solution: {self.X[i]}")
 
         self.a -= self.a_dec_v

@@ -15,12 +15,16 @@ class BaseAlgo:
         self.bounds = bounds
         self.integer_dims = integer_dims
 
-        self.best = None
+        self.best_params = None
         self.best_fitness = -np.inf
 
     @property
     def dim(self):
         return len(self.bounds)
+
+    @property
+    def name(self):
+        return self.__class__.__name__
 
     def _eval_and_update(self, candidate):
         """
@@ -28,7 +32,7 @@ class BaseAlgo:
         """
         fitness = self.__eval_func(candidate)
         if fitness > self.best_fitness:
-            self.best = candidate.copy()
+            self.best_params = candidate.copy()
             self.best_fitness = fitness
         return fitness
 
@@ -47,7 +51,7 @@ class BaseAlgo:
     def optimise(self, max_iter=50, **kwargs):
         self._algo_init(max_iter, **kwargs)
         for iter_num in range(max_iter):
-            print(
-                f"Iteration {iter_num + 1}/{max_iter}, Best Solution: {self.best}, Best Fitness: {self.best_fitness}"
-            )
+            # print(
+            #     f"Iteration {iter_num + 1}/{max_iter}, Best Solution: {self.best}, Best Fitness: {self.best_fitness}"
+            # )
             self._algo_iter(iter_num)
