@@ -28,7 +28,7 @@ def sma_filter(N):
   return np.ones(N)/N
 
 def lma_filter(N):
-  return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
+  return (np.full(N, 2)-(np.arange(N)/N))/(N+np.ones(N))
 # k is increasing from k=0 to k=n-1 (where n is the number of points in N)
 
 def ema_filter(sf, N):
@@ -43,10 +43,11 @@ def wma(P, N, kernel):
   return np.convolve(pad(P,N), kernel, "valid")
 
 def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
-  sma = np.multiply(wma(data, d1, sma_filter(data)), w1)
-  lma = np.multiply(wma(data, d2, lma_filter(data)), w2)
-  ema = np.multiply(wma(data, d3, ema_filter(sf, data)), w3)
+  sma = wma(data, d1, sma_filter(d1)) * w1
+  lma = wma(data, d2, lma_filter(d2)) * w2
+  ema = wma(data, d3, ema_filter(sf, d3)) * w3
   weights = w1 + w2 + w3
+  return (sma + lma + ema) / weights
   return np.divide((sma + lma + ema), weights)
 
 def sign_filter(N):
