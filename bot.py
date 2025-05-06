@@ -49,30 +49,18 @@ def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
   weights = w1 + w2 + w3
   return (sma + lma + ema) / weights
 
-def sign_filter(N):
-  # to convolve with data in order to figure out signal changing signs
-  filtered = np.full(N, 0)
-  negative = filtered == 0
-  positive = filtered == 1 
-  filtered[positive] = 0.5
-  filtered[negative] = -0.5
-  return filtered
-
-def subtract(high, low):
-  #subtracts high signal from low signal
-  return np.subtract(high,low)
-
 def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
   difference = subtract(high_signal, low_signal)
-  signals = np.convolve(difference, sign_filter(difference))
-  final_signals = np.full(data, "none")
-  buy = signals > 0.5
-  sell = signals < -0.5
-  final_signals[buy] = "buy"
-  final_signals[sell] = "sell"
-  # following line is for dependent on what our evaluation code takes
+  signs = np.sign(difference)
+  shifted = np.roll(signs, 1)
+  shifts = signs != shifted
+  pos_filter = np.logical_and(shifts, signs == 1)
+  neg_filter = np.logical_and(shifts, signs == -1)
+  final_signals = np.full(P.shape, "none")
+  final_signals[pos_filter] = "buy"
+  final_signals[neg_filter] = "sell"
   return final_signals.tolist()
 
 def get_signals_sma2(data, highN, lowN):
