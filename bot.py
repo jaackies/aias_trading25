@@ -1,31 +1,11 @@
 import numpy as np
 import pandas as pd
 
-# Install dependencies as needed:
-# pip install kagglehub[pandas-datasets]
-
-#import kagglehub
-#from kagglehub import KaggleDatasetAdapter
-
-# Set the path to the file you'd like to load
-file_path = ""
-
-# Load the latest version
-"""
-df = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "prasoonkottarathil/btcinusd",
-  file_path,
-)
-"""
-
 np.set_printoptions(threshold=np.inf)
 
-## ^ may need to remove data reading in, as that is being done by the evavluation code
-
 def pad(P, N):
-  # where P is your array of data points
-  # and N is the # data pt.
+  # where P is your numpy array of data points
+  # and N is the window size
   padding = -np.flip(P[1:N])
   return np.append(padding, P)
 
@@ -33,60 +13,38 @@ def sma_filter(N):
   return np.ones(N)/N
 
 def lma_filter(N):
-  #return (np.full(N, 2)-(np.arange(N.size)/N))/(N+np.ones(N))
   return (np.full(N, 2)-(np.arange(N)/N))/(N+np.ones(N))
 # k is increasing from k=0 to k=n-1 (where n is the number of points in N)
 
 def ema_filter(sf, N):
   # sf = alpha = smoothing factor
-  #return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size)) - Jackie's original code
-  return sf * (1 - sf) ** np.arange(N)
-
+  return (np.full(N,sf) * np.power((np.ones(N)-np.full(N,sf)), np.arange(N)))
 
 def wma(P, N, kernel):
   # P = array of data points
-  # N = number of days
+  # N = window size
   # kernel = filter method called on N
   return np.convolve(pad(P,N), kernel, "valid")
 
 def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
-  sma = np.multiply(wma(data, d1, sma_filter(d1)), w1)
-  lma = np.multiply(wma(data, d2, lma_filter(d2)), w2)
-  ema = np.multiply(wma(data, d3, ema_filter(sf, d3)), w3)
+  sma = wma(data, d1, sma_filter(d1)) * w1
+  lma = wma(data, d2, lma_filter(d2)) * w2
+  ema = wma(data, d3, ema_filter(sf, d3)) * w3
   weights = w1 + w2 + w3
-  return np.divide((sma + lma + ema), weights)
-
-def sign_filter(N):
-  # to convolve with data in order to figure out signal changing signs
-  filtered = np.full(N, 0)
-  negative = filtered == 0
-  positive = filtered == 1 
-  filtered[positive] = 0.5
-  filtered[negative] = -0.5
-  return filtered
-
-def subtract(high, low):
-  #subtracts high signal from low signal
-  return np.subtract(high,low)
+  return (sma + lma + ema) / weights
 
 def buysell_signals(high_signal, low_signal):
   # obtains buy/sell signals from a high frequency signal and a low frequency signal
   # returns python array continaing strings of "buy", "sell" or "none"
-  difference = subtract(high_signal, low_signal)
-  #signals = np.convolve(difference, sign_filter(len(difference))) - Jackie's code
-  # this is the changed one - not the fixed one
+  difference = high_signal - low_signal
   signs = np.sign(difference)
-  signals = np.diff(signs)
-
-  final_signals = np.full(len(signals), "none")
-  #buy = signals > 0.5 -Jackie's code
-  #sell = signals < -0.5 - Jackie's code
-  # final_signals[buy] = "buy" - Jackie's code
-  final_signals[signals > 0.5] = "buy"
-  # final_signals[sell] = "sell" - Jackie's code
-  final_signals[signals < -0.5] = "sell"
-  # following line is for dependent on what our evaluation code takes
-  # print(f"final_signals: {final_signals}")
+  shifted = np.roll(signs, 1)
+  shifts = signs != shifted
+  pos_filter = np.logical_and(shifts, signs == 1)
+  neg_filter = np.logical_and(shifts, signs == -1)
+  final_signals = np.full(signs.shape, "none")
+  final_signals[pos_filter] = "buy"
+  final_signals[neg_filter] = "sell"
   return final_signals.tolist()
 
 def get_signals_sma2(data, highN, lowN):
@@ -94,14 +52,14 @@ def get_signals_sma2(data, highN, lowN):
   # one with window size highN that is small for high freq signal
   # one with window size lowN that is larger for low freq signal
   high_signal = wma(data, highN, sma_filter(highN))
-  # print(f"high_signal： {high_signal}")
   low_signal = wma(data, lowN, sma_filter(lowN))
-  # print(f"low signal: {low_signal}")
   return buysell_signals(high_signal, low_signal)
 
-def get_signals_smaema(data, highN, lowN, Esf):
-  # get buy and sell signals by using a SMA filter for low freq and EMA for high frequency
-  high_signal = wma(data, highN, ema_filter(Esf, highN))
+def get_signals_smaema(data, lowN, EN, Esf):
+  # get buy and sell signals by using a
+  # SMA filter for low freq (lowN = larger window size) and
+  # EMA for high frequency (EN = smaller window size, Esf = smoothing factor)
+  high_signal = wma(data, EN, ema_filter(Esf, EN))
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
   
@@ -113,5 +71,3 @@ def get_signals_complex(data, high, low):
   high_signal = complex_freq(data, high[0], high[1], high[2], high[3], high[4], high[5], high[6])
   low_signal = complex_freq(data, low[0], low[1], low[2], low[3], low[4], low[5], low[6])
   return buysell_signals(high_signal, low_signal)
-
-# TODO: test running this -- reference evaluation code to see how the data is read in

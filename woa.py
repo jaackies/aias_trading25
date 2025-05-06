@@ -1,23 +1,20 @@
 import numpy as np
 import pandas as pd
-def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_dims=None):
+def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter, integer_dims=None):
     a = 2
     history = []
     Init_whalses = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     Int_whales = round_integer_columns(Init_whalses, integer_dims)
     best = Int_whales[0].copy() #initialize optimal solution
-    print(f"Initial best:  {best}")
-    best_score = fitness_func(*best)
-    print(f"Initial best score: {best_score}")
+    best_score = fitness_func(bot_type, *best)
     for i in range(num_agents): # compare to find the current optimal solution
-        score = fitness_func(*Int_whales[i])
-        if score < best_score:
+        score = fitness_func(bot_type, *Int_whales[i])
+        if score > best_score:
             best = Int_whales[i].copy()
             best_score = score
 
     for t in range(max_iter): # while (t < maximum number of iterations)
         a = 2 - t * (2 / max_iter) # calculate a. make sure a is linearly decreased from 2 to 0
-        # print("Iteration: " + str(t))
 
         for i in range(num_agents):
             r = np.random.rand(dim)
@@ -45,15 +42,14 @@ def whale_optimization(fitness_func, dim, bounds, num_agents, max_iter, integer_
                 Int_whales[i][d] = np.clip(Int_whales[i][d], bounds[d][0], bounds[d][1])
                 if integer_dims and d in integer_dims:
                     Int_whales[i][d] = int(round(Int_whales[i][d]))
-            score = fitness_func(*Int_whales[i]) #Calculate the fitness of each search agent
-            row = [t,i] + list(Int_whales[i]) + [score]
+            score = fitness_func(bot_type, *Int_whales[i]) #Calculate the fitness of each search agent
+            row = [t,i] + list(Int_whales[i]) + [score, best_score]
             history.append(row)
-            # print("Whales " + str(i) + ": ")
-            # print(f"Solution: {Int_whales[i].tolist()}, Score: {score}")
             if score > best_score: # Update X* is there is a better solution
                 best = Int_whales[i].copy()
                 best_score = score
-    columns = ["Iteration", "Whale_ID"] + [f"Dim_{j}" for j in range(dim)] + ["Fitness"]
+    # Generate csv file
+    columns = ["Iteration", "Whale_ID"] + [f"Dim_{j}" for j in range(dim)] + ["Fitness", "Best_So_far"]
     df = pd.DataFrame(history, columns=columns)
     df.to_csv("woa_whale_log.csv", index=False)
     return best, best_score
