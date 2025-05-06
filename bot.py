@@ -3,23 +3,23 @@ import pandas as pd
 
 # Install dependencies as needed:
 # pip install kagglehub[pandas-datasets]
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
+# import kagglehub 
+# from kagglehub import KaggleDatasetAdapter
 
-# Set the path to the file you'd like to load
-file_path = ""
+# # Set the path to the file you'd like to load
+# file_path = ""
 
-# Load the latest version
-df = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "prasoonkottarathil/btcinusd",
-  file_path,
-)
+# # Load the latest version
+# df = kagglehub.load_dataset(
+#   KaggleDatasetAdapter.PANDAS,
+#   "prasoonkottarathil/btcinusd",
+#   file_path,
+# )
 
 ## ^ may need to remove data reading in, as that is being done by the evavluation code
 
 def pad(P, N):
-  # where P is your array of data points
+  # where P is your numpy array of data points
   # and N is the # data pt.
   padding = -np.flip(P[1:N])
   return np.append(padding, P)
@@ -33,7 +33,8 @@ def lma_filter(N):
 
 def ema_filter(sf, N):
   # sf = alpha = smoothing factor
-  return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N.size))
+  return (np.full(N,sf) * np.power((np.ones(N)-np.full(N,sf)), np.arange(N)))
+  # return (np.full(N, sf) * (np.ones(N)-np.full(N, sf))^np.arange(N))
 
 def wma(P, N, kernel):
   # P = array of data points
