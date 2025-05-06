@@ -11,11 +11,11 @@ class KaggleDataset:
             "prasoonkottarathil/btcinusd",
             f"BTC-{timescale}.csv",
             pandas_kwargs={
-                "usecols": ["date", "close"],
-                "parse_dates": ["date"],
-                "date_parser": pd.Timestamp,
+                "usecols": ["unix", "close"],
             },
         )
+        self.df["date"] = pd.to_datetime(self.df["unix"], unit="s")
+        self.df = self.df.drop(columns=["unix"])
 
     def get_series(self, start: pd.Timestamp, duration: pd.Timedelta) -> pd.Series:
         """
