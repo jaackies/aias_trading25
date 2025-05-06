@@ -1,29 +1,8 @@
-# import numpy as np 
-# def sphere(x):
-#     return np.sum(x ** 2)
-
-# import important library
 import pandas as pd
 import numpy as np
 import bot
 import importlib
 importlib.reload(bot)
-
-# read the csv file
-daily_df=pd.read_csv('BTC-Daily.csv')
-daily_df.head()
-# convert time strings into timestamps, and take only year, month and date values
-daily_df["date"]=pd.to_datetime(daily_df["date"]).dt.strftime("%Y-%m-%d")
-daily_df.shape
-# splitting the data
-training = daily_df[daily_df["date"]<"2020-01-01"]
-testing = daily_df[daily_df["date"]>="2020-01-01"]
-# convert the data into csv files
-training.to_csv('training.csv')
-testing.to_csv('testing.csv')
-print(training.shape)
-print(testing.shape)
-
 
 def bot_fitness_func(bot_type, high_window, low_window, alpha=0): # change bot_signals to high_frequency_window_size, low_frequency_window_size
     """
@@ -44,10 +23,10 @@ def bot_fitness_func(bot_type, high_window, low_window, alpha=0): # change bot_s
     
     if bot_type.lower() == 'sma' and alpha ==0:
         bot_signals = bot.get_signals_sma2(close_price, high_window, low_window) #need to think about how to call 2 other bot algorithms
-    elif bot_type.lower() == 'smaema' and alpha!=0:
-        bot_signals = bot.get_signals_smaema(close_price, high_window, low_window, alpha)
-    elif bot_type.lower() == 'complex' and alpha==0: #as alpha values were stored in the list of high_window and low_window
-        bot_signals = bot.get_signals_complex(close_price, high_window, low_window)
+    # elif bot_type.lower() == 'smaema' and alpha!=0:
+    #     bot_signals = bot.get_signals_smaema(close_price, high_window, low_window, alpha)
+    # elif bot_type.lower() == 'complex' and alpha==0: #as alpha values were stored in the list of high_window and low_window
+    #     bot_signals = bot.get_signals_complex(close_price, high_window, low_window)
 
     # initial values
     cash = 1000
