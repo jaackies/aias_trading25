@@ -21,8 +21,6 @@ testing = daily_df[daily_df["date"]>="2020-01-01"]
 # convert the data into csv files
 training.to_csv('training.csv')
 testing.to_csv('testing.csv')
-print(training.shape)
-print(testing.shape)
 
 
 def bot_fitness_func(bot_type, high_window, low_window, alpha=0): # change bot_signals to high_frequency_window_size, low_frequency_window_size
@@ -54,6 +52,8 @@ def bot_fitness_func(bot_type, high_window, low_window, alpha=0): # change bot_s
     fee=0.03
     bitcoin = 0.0
 
+    if high_window >= low_window:
+        return -np.inf
     #loop through the time length
     for i in range(len(close_price)-1):
         close=close_price.iloc[i]

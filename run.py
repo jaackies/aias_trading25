@@ -8,9 +8,9 @@ from problem import bot_fitness_func
 # max_iter: iterations to optimize
 # integer_dims：If values of some dims should be integer
 # bot_type: "sma", "smaema"， "complex"
-best, score= whale_optimization(fitness_func=bot_fitness_func, bot_type="sma", dim=2, bounds=[(1,10),(11,40)], num_agents= 10, max_iter= 10, integer_dims= [0,1])
-# low: 11 - 40
-# high: 1-10
+best, score= whale_optimization(fitness_func=bot_fitness_func, bot_type="sma", dim=2, bounds=[(5,50),(20,100)], num_agents= 10, max_iter= 100, integer_dims= [0,1])
+# low: 11 - 40， 51,300
+# high: 1-10 5,50
 
 print(f"Best solution: {best.tolist()}")
 print(f"Best score: {score}")
