@@ -86,7 +86,7 @@ def buysell_signals(high_signal, low_signal):
   # final_signals[sell] = "sell" - Jackie's code
   final_signals[signals < -0.5] = "sell"
   # following line is for dependent on what our evaluation code takes
-  print(f"final_signals: {final_signals}")
+  # print(f"final_signals: {final_signals}")
   return final_signals.tolist()
 
 def get_signals_sma2(data, highN, lowN):
