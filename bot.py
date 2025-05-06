@@ -48,7 +48,6 @@ def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
   ema = wma(data, d3, ema_filter(sf, d3)) * w3
   weights = w1 + w2 + w3
   return (sma + lma + ema) / weights
-  return np.divide((sma + lma + ema), weights)
 
 def sign_filter(N):
   # to convolve with data in order to figure out signal changing signs
