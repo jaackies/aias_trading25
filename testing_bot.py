@@ -10,12 +10,30 @@ raw_data = [0, 0.25, 0.5, 0.8, 0.8, 0.55, 0.52, 0.51, 0.6, 0.61,
             0.45, 0.4, 0.3, 0.25, 0.2, 0.1, 0, -0.25, -0.3, -0.4, -0.5]
 data = np.array(raw_data)
 
+
+# # commented out, but uncomment to see inner workings of the getting buy and sell signals
+# high = wma(data, 2, sma_filter(2))
+# low = wma(data, 4, sma_filter(4))
+# diff = high-low
+# print(diff)
+# signs = np.sign(diff)
+# shifted = np.roll(signs, 1)
+# shifts = signs != shifted
+# print(signs)
+# print(shifts)
+# pos_filter = np.logical_and(shifts, signs == 1)
+# neg_filter = np.logical_and(shifts, signs == -1)
+# final_signals = np.full(signs.shape, "none")
+# final_signals[pos_filter] = "buy"
+# final_signals[neg_filter] = "sell"
+# print(final_signals)
+
 # setting param arrays for use in complex signals
 high_params = [1, 2, 2, 3, 4, 5, 0.5]
 low_params = [2, 2, 2, 10, 8, 9, 0.2]
 
-# note that for ease of viewing, i've sliced only the
-# first 15 elements of the resulting buy/sell array
-print(get_signals_sma2(data, 2, 6)[:15])
-print(get_signals_smaema(data, 2, 6, 0.4)[:15])
-print(get_signals_complex(data, high_params, low_params)[:15])
+ # note that for ease of viewing, i've sliced only the
+ # first 15 elements of the resulting buy/sell array
+ print(get_signals_sma2(data, 2, 6)[:15])
+ print(get_signals_smaema(data, 2, 6, 0.4)[:15])
+ print(get_signals_complex(data, high_params, low_params)[:15])
