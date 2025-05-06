@@ -1,7 +1,3 @@
-# import numpy as np 
-# def sphere(x):
-#     return np.sum(x ** 2)
-
 # import important library
 import pandas as pd
 import numpy as np
@@ -16,8 +12,8 @@ daily_df.head()
 daily_df["date"]=pd.to_datetime(daily_df["date"]).dt.strftime("%Y-%m-%d")
 daily_df.shape
 # splitting the data
-training = daily_df[daily_df["date"]<"2020-01-01"]
-testing = daily_df[daily_df["date"]>="2020-01-01"]
+training = daily_df[daily_df["date"]<"2020-01-01"].iloc[::-1]
+testing = daily_df[daily_df["date"]>="2020-01-01"].iloc[::-1]
 # convert the data into csv files
 training.to_csv('training.csv')
 testing.to_csv('testing.csv')
@@ -55,7 +51,7 @@ def bot_fitness_func(bot_type, high_window, low_window, alpha=0): # change bot_s
     if high_window >= low_window:
         return -np.inf
     #loop through the time length
-    for i in range(len(close_price)-1):
+    for i in range(min(len(bot_signals), len(close_price)-1)):
         close=close_price.iloc[i]
         # buy, ensure we have cash to buy
         if bot_signals[i] == "buy" and cash>0:

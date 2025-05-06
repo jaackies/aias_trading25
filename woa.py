@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
-def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter, integer_dims=None):
+
+def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter, integer_dims):
     a = 2
     history = []
     Init_whalses = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
-    Int_whales = round_integer_columns(Init_whalses, integer_dims)
+    Int_whales = np.array([convert_array_for_fitness(individual, integer_dims) for individual in Init_whalses])
+    print(integer_dims)
     best = Int_whales[0].copy() #initialize optimal solution
-    best_score = fitness_func(bot_type, *best)
+    print(best)
+    params = convert_array_for_fitness(best, integer_dims)
+    best_score = evaluate_function(fitness_func, bot_type, params)
     for i in range(num_agents): # compare to find the current optimal solution
-        score = fitness_func(bot_type, *Int_whales[i])
+        params = convert_array_for_fitness(Int_whales[i], integer_dims)
+        score = evaluate_function(fitness_func, bot_type, params)
         if score > best_score:
             best = Int_whales[i].copy()
             best_score = score
@@ -42,7 +47,8 @@ def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter
                 Int_whales[i][d] = np.clip(Int_whales[i][d], bounds[d][0], bounds[d][1])
                 if integer_dims and d in integer_dims:
                     Int_whales[i][d] = int(round(Int_whales[i][d]))
-            score = fitness_func(bot_type, *Int_whales[i]) #Calculate the fitness of each search agent
+            params = convert_array_for_fitness(Int_whales[i], integer_dims)
+            score = evaluate_function(fitness_func, bot_type, params)
             row = [t,i] + list(Int_whales[i]) + [score, best_score]
             history.append(row)
             if score > best_score: # Update X* is there is a better solution
@@ -57,8 +63,21 @@ def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter
 
 #  Round and convert the specified columns of the array to integers
 #  integer_dims: the colums need to be converted
-def round_integer_columns(array, integer_dims):
-    result = array.copy()
-    for dim in integer_dims:
-        result[:, dim] = np.round(result[:, dim]).astype(int)
-    return result.astype(int)
+#     return result
+def convert_array_for_fitness(X_row, integer_dims):
+    result = []
+    for i, val in enumerate(X_row):
+        if i in integer_dims:
+            result.append(int(round(val)))  # 强制转 int
+        else:
+            result.append(float(val))       # 保留 float
+    return result
+
+def evaluate_function(fitness_func, bot_type, params):
+    if bot_type == "complex":
+        high = params [:7]
+        low = params [7:]
+        score = fitness_func(bot_type, high, low)
+    else:
+        score = fitness_func(bot_type, *params)
+    return score

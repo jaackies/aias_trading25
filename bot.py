@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
 
-np.set_printoptions(threshold=np.inf)
-
 def pad(P, N):
   # where P is your numpy array of data points
   # and N is the window size
