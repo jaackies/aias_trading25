@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 
 def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter, integer_dims):
+    print("Start WOA")
     a = 2
     history = []
     Init_whalses = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     Int_whales = np.array([convert_array_for_fitness(individual, integer_dims) for individual in Init_whalses])
     best = Int_whales[0].copy() #initialize optimal solution
-    print(f"Initial best: {best}")
     params = convert_array_for_fitness(best, integer_dims)
     best_score = evaluate_function(fitness_func, bot_type, params)
     for i in range(num_agents): # compare to find the current optimal solution
