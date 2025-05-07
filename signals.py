@@ -37,3 +37,10 @@ def wma(P: np.ndarray, kernel: np.ndarray):
     # N = number of days
     # kernel = filter method called on N
     # return np.convolve(pad(P, N), kernel, "valid")
+
+
+def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
+    weights = np.array([w1, w2, w3])
+    kernels = np.array([sma_filter(d1), lma_filter(d2), ema_filter(sf, d3)])
+    vwma = np.vectorize(lambda kernel: wma(data, kernel))
+    return np.dot(weights, vwma(kernels)) / weights.sum()
