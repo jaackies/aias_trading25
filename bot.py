@@ -53,7 +53,7 @@ def get_signals_sma2(data, highN, lowN):
   low_signal = wma(data, lowN, sma_filter(lowN))
   return buysell_signals(high_signal, low_signal)
 
-def get_signals_smaema(data, lowN, EN, Esf):
+def get_signals_smaema(data, EN, lowN, Esf):
   # get buy and sell signals by using a
   # SMA filter for low freq (lowN = larger window size) and
   # EMA for high frequency (EN = smaller window size, Esf = smoothing factor)
