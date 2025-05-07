@@ -1,7 +1,7 @@
 import pandas as pd
 import bot
 
-def bot_training(bot_type, high_window, low_window, alpha): # change bot_signals to high_frequency_window_size, low_frequency_window_size
+def bot_training(bot_type, high_window, low_window, alpha=0): # change bot_signals to high_frequency_window_size, low_frequency_window_size
     # intialise bot, use training dataset for optimisation algorithms fitness functions
     bot_signals=[]
     close_price = pd.read_csv('training.csv')['close']

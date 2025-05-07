@@ -41,10 +41,10 @@ def bot_testing(bot_type, optimal_values):
         cash = bitcoin * last_close * (1-fee)
         bitcoin =0
         result.append([time.iloc[-1],cash, bitcoin])
-        return result
+        return result[-1][1]
     elif cash>0:
         result.append([time.iloc[-1],cash, bitcoin])
-        return result
+        return result[-1][1]
 
 def bot_evaluation(bot_type, optimal_values):
     # This function will returns the result nicely

@@ -57,8 +57,8 @@ def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter
     columns = ["Iteration", "Whale_ID"] + [f"Dim_{j}" for j in range(dim)] + ["Fitness", "Best_So_far"]
     df = pd.DataFrame(history, columns=columns)
     df.to_csv("woa_whale_log.csv", index=False)
+    best = convert_array_for_fitness(best, integer_dims)
     if bot_type == "complex":
-        best = convert_array_for_fitness(best, integer_dims)
         best = [best[:7],best[7:]]
     return best, best_score
 
