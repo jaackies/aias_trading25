@@ -1,5 +1,5 @@
 import numpy as np
-from bot_training import bot_training
+import bot_training
 
 # Group A: 
 # High(1-10), Low(11-40)
@@ -63,8 +63,8 @@ def hill_climbing(bot_type, bounds, max_iter=1000):
             new_high_frequency_window, new_low_frequency_window = complex_tweak(high_window, low_window, bounds)
             
         # run the total cash return after trading
-        cash1=bot_training(bot_type, high_window, low_window, alpha)
-        cash2=bot_training(bot_type, new_high_frequency_window, new_low_frequency_window,alpha)
+        cash1=bot_training.bot_training(bot_type, high_window, low_window, alpha)
+        cash2=bot_training.bot_training(bot_type, new_high_frequency_window, new_low_frequency_window,alpha)
         # compare the cash earned after tweaking the parameters
         if cash2 > cash1:
             high_window = new_high_frequency_window

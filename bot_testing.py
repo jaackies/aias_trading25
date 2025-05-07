@@ -5,8 +5,6 @@ def bot_testing(bot_type, optimal_values):
     # intialise bot, use training dataset for optimisation algorithms fitness functions
     bot_signals=[]
     close_price = pd.read_csv('testing.csv')['close']
-    time = pd.read_csv('testing.csv')['date']
-    result=[]
 
     # intialise bot, use training dataset for optimisation algorithms fitness functions
     if bot_type.lower() == 'sma':
@@ -28,26 +26,16 @@ def bot_testing(bot_type, optimal_values):
         if bot_signals[i] == "buy" and cash>0:
             bitcoin =  (cash*(1-fee))/close
             cash = 0
-            result.append([time[i],cash, bitcoin])
         # sell
         elif bot_signals[i] == "sell" and bitcoin>0:
             cash = bitcoin * close * (1-fee)
             bitcoin =0
-            result.append([time[i],cash, bitcoin])
     
     # final evaluation to change back to cash
     last_close=close_price.iloc[-1]
     if bitcoin>0:
         cash = bitcoin * last_close * (1-fee)
         bitcoin =0
-        result.append([time.iloc[-1],cash, bitcoin])
-        return result[-1][1]
+        return cash
     elif cash>0:
-        result.append([time.iloc[-1],cash, bitcoin])
-        return result[-1][1]
-
-def bot_evaluation(bot_type, optimal_values):
-    # This function will returns the result nicely
-    result_lst=bot_testing(bot_type, optimal_values)
-    result_df=pd.DataFrame(result_lst, columns=["Time", "Cash", "Bitcoin"])
-    print(result_df.to_string(index=False, justify="center", float_format='{:,.2f}'.format))
+        return cash
