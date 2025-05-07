@@ -12,6 +12,8 @@
 
 Notebooks bring these together. `test_*.ipynb` are notebooks to test the functionality of the code. The rest are for the report. 
 
+`optimise.ipynb` is the main notebook for the project.
+
 ## Getting started
 
 You must first install the required packages. You can do this by running `pip install -r requirements.txt` (should create a virtualenv first).
