@@ -6,10 +6,14 @@ class BaseAlgo:
     Base class for all optimisation algorithms.
     """
 
-    def __init__(self, eval_func, bounds, integer_dims=[]):
+    def __init__(
+        self, eval_func, bounds, integer_dims: frozenset = frozenset(), seed=None
+    ):
         """
 
         Initializes the BaseAlgo with an evaluation function (which returns a fitness value where bigger is better) and bounds for the parameters (solution).
+
+        Lower bound inclusive, upper bound exclusive.
         """
         self.__eval_func = eval_func  # Function takes in an array of parameters and returns a fitness value
         self.bounds = bounds
@@ -17,6 +21,8 @@ class BaseAlgo:
 
         self.best_params = None
         self.best_fitness = -np.inf
+
+        self.rand_gen = np.random.default_rng(seed)
 
     @property
     def dim(self):

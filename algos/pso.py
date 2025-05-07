@@ -14,8 +14,18 @@ class PSO(BaseAlgo):
         """
         particles = []
         for _ in range(num_particles):
-            position = [np.random.randint(low, high + 1) for low, high in self.bounds]
-            velocity = [np.random.uniform(-1, 1) for _ in range(2)]
+            position = [
+                (
+                    self.rand_gen.integers
+                    if i in self.integer_dims
+                    else self.rand_gen.uniform
+                )(low, high)
+                for i, (low, high) in enumerate(self.bounds)
+            ]
+            velocity = [
+                self.rand_gen.uniform(-np.abs(high - low), np.abs(high - low))
+                for low, high in self.bounds
+            ]
             particles.append(
                 {
                     "position": position,
@@ -50,7 +60,7 @@ class PSO(BaseAlgo):
         # Update velocities and positions
         for particle in self.particles:
             for i in range(len(particle["position"])):
-                r1, r2 = np.random.rand(), np.random.rand()
+                r1, r2 = self.rand_gen.random(2)
                 particle["velocity"][i] = (
                     self.w * particle["velocity"][i]
                     + self.c1

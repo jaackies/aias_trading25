@@ -19,7 +19,9 @@ def lma_filter(N: int) -> np.ndarray:
     return w / w.sum()
 
 
-def ema_filter(N, sf):
+def ema_filter(N: int, sf: float) -> np.ndarray:
+    # TODO: see https://arc.net/l/quote/cjtoaouc
+    assert sf > 0, f"Smoothing factor must be between 0 and inf. (sf = {sf})"
     # w = sf * ((1 - sf) ** np.arange(N))
     # return w / np.sum(w)  # Normalize the weights
     # return np.full(N, sf) * np.power((np.ones(N) - np.full(N, sf)), np.arange(N))
@@ -39,16 +41,9 @@ def wma_signal(P: np.ndarray, kernel: np.ndarray):
     # return np.convolve(pad(P, N), kernel, "valid")
 
 
-def diff_signal(short_signal: np.ndarray, long_signal: np.ndarray) -> np.ndarray:
-    return short_signal - long_signal
-
-
-def buy_sell_signal(signal: np.ndarray) -> np.ndarray:
-    """Buy when 1 and sell when -1."""
-    output = np.zeros_like(signal)
-    output[1:] = np.where((signal[:-1] > 0) & (signal[1:] <= 0), 1, output[1:])
-    output[1:] = np.where((signal[:-1] <= 0) & (signal[1:] > 0), -1, output[1:])
-    return output
+def holding_signal(high: np.ndarray, low: np.ndarray) -> np.ndarray:
+    """True if high freq signal is above low freq signal (i.e. whether to hold or not)."""
+    return high > low
 
 
 def complex_signal(data, w1, w2, w3, d1, d2, d3, sf):

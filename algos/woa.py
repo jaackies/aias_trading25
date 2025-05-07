@@ -21,21 +21,27 @@ class WOA(BaseAlgo):
         self.a_dec_v = 2 / max_iter
         # Initialize the whales positions (which are initial solutions)
         self.X = np.array(
-            [np.random.uniform(low, high, num_agents) for (low, high) in self.bounds]
+            [
+                (
+                    self.rand_gen.integers
+                    if i in self.integer_dims
+                    else self.rand_gen.uniform
+                )(low, high, num_agents)
+                for i, (low, high) in enumerate(self.bounds)
+            ]
         ).T
         for i in range(num_agents):
             self._eval_and_update(self.X[i])
 
     def _algo_iter(self, _):
         for i in range(self.num_agents):
-            r = np.random.rand(self.dim)
+            r, p = self.rand_gen.random(2)
             A = 2 * self.a * r - self.a  # Update A
             C = 2 * r  # Update C
-            p = np.random.rand()
 
             if p < 0.5:
                 if np.linalg.norm(A) >= 1:  # Exploration phase
-                    X_rand = self.X[np.random.randint(0, self.num_agents)]
+                    X_rand = self.X[self.rand_gen.integers(0, self.num_agents)]
                     D = np.abs(C * X_rand - self.X[i])
                     self.X[i] = X_rand - A * D
                 else:  # Exploitation phase - Shrinking encircling mechanism
@@ -44,7 +50,7 @@ class WOA(BaseAlgo):
             else:  # if p >= 0.5；Exploitation phase - Spiral updating position
                 D = np.abs(self.best_params - self.X[i])
                 b = 1
-                l = np.random.uniform(-1, 1, self.dim)
+                l = self.rand_gen.uniform(-1, 1, self.dim)
                 self.X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + self.best_params
 
             # Check if any search agent goes beyond the search space and amend it
