@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import bot_training
 
 # Group A: 
@@ -51,6 +52,8 @@ def hill_climbing(bot_type, bounds, max_iter=1000):
 
     # the best cash
     cash1=0
+    # convergence
+    convergence=[]
     for i in range(max_iter):
         # find the correct parameter tweak:
         if bot_type.lower() == 'sma':
@@ -64,16 +67,19 @@ def hill_climbing(bot_type, bounds, max_iter=1000):
             
         # run the total cash return after trading
         cash1=bot_training.bot_training(bot_type, high_window, low_window, alpha)
-        cash2=bot_training.bot_training(bot_type, new_high_frequency_window, new_low_frequency_window,alpha)
+        cash2=bot_training.bot_training(bot_type, new_high_frequency_window, new_low_frequency_window, new_alpha)
         # compare the cash earned after tweaking the parameters
         if cash2 > cash1:
             high_window = new_high_frequency_window
             low_window = new_low_frequency_window
             alpha=new_alpha
             cash1 = cash2
+    convergence_df = pd.DataFrame({'No. of iteration': list(range(1, len(convergence)+1)),'Cash': convergence})
     if bot_type.lower() == 'sma' or bot_type.lower() == 'complex':
+        convergence_df.to_csv('{} hill_climbing_convergence.csv'.format(bot_type.lower()), index=False)
         return [high_window, low_window], float(cash1)
     elif bot_type.lower() == 'smaema':
+        convergence_df.to_csv('{} hill_climbing_convergence.csv'.format('smaema'), index=False)
         return [high_window, low_window, alpha], float(cash1)
 
 def window_tweak(hfw, lfw, window_range1, window_range2):
