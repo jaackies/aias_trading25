@@ -11,9 +11,9 @@ from hill_climbing import hill_climbing
 # Low: (51,100)
 
 ########### WOA ################
-# best, score= whale_optimization(fitness_func=bot_training, bot_type="sma", dim=2, bounds=[(5,50), (51,100)], num_agents= 10, max_iter= 100, integer_dims= [0,1])
+# best, score= whale_optimization(fitness_func=bot_training, bot_type="sma", dim=2, bounds=[(1,10), (11,40)], num_agents= 10, max_iter= 100, integer_dims= [0,1])
 # best, score= whale_optimization(fitness_func=bot_training, bot_type="smaema", dim=3, bounds=[(1,10), (11,40), (0,1)], num_agents= 10, max_iter= 100, integer_dims= [0,1])
-# best, score= whale_optimization(fitness_func=bot_training, bot_type="complex", dim=14, bounds=[(1, 10), (1, 10), (1, 10), (2, 50), (2, 50), (2, 50), (0, 1), (1, 10), (1, 10), (1, 10),(2, 90), (2, 90), (2, 90),(0, 1)], num_agents= 10, max_iter= 10, integer_dims= [3,4,5,10,11,12])
+# best, score= whale_optimization(fitness_func=bot_training, bot_type="complex", dim=14, bounds=[(0, 10), (0, 10), (0, 10), (1, 10), (1, 10), (1, 10), (0, 1), (0, 10), (0, 10), (0, 10),(11, 40), (11, 40), (11, 40),(0, 1)], num_agents= 10, max_iter= 100, integer_dims= [3,4,5,10,11,12])
 # print(f"Best solution: {best}")
 # print(f"Best score: {score}")
 
