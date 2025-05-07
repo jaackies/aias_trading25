@@ -17,12 +17,6 @@ class KaggleDataset:
         self.df["date"] = pd.to_datetime(self.df["unix"], unit="s")
         self.df = self.df.drop(columns=["unix"])
 
-    def get_series(self, start: pd.Timestamp, duration: pd.Timedelta) -> pd.Series:
-        """
-        Get a time series from the dataset.
-        :param start: Start date of the time series.
-        :param duration: Duration of the time series.
-        :return: Time series as a pandas Series.
-        """
-        end = start + duration
-        return self.df[(self.df["date"] >= start) & (self.df["date"] < end)]["close"]
+    def get_timerange(self, start: pd.Timestamp, end: pd.Timestamp) -> pd.DataFrame:
+        """Get a time range of the dataset. (inclusive start, exclusive end)"""
+        return self.df[(self.df["date"] >= start) & (self.df["date"] < end)]

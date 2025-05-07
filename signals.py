@@ -19,7 +19,7 @@ def lma_filter(N: int) -> np.ndarray:
     return w / w.sum()
 
 
-def ema_filter(sf, N):
+def ema_filter(N, sf):
     # w = sf * ((1 - sf) ** np.arange(N))
     # return w / np.sum(w)  # Normalize the weights
     # return np.full(N, sf) * np.power((np.ones(N) - np.full(N, sf)), np.arange(N))
@@ -27,7 +27,7 @@ def ema_filter(sf, N):
     return w / w.sum()
 
 
-def wma(P: np.ndarray, kernel: np.ndarray):
+def wma_signal(P: np.ndarray, kernel: np.ndarray):
     N = len(kernel)
     padded_P = np.concat((np.flip(P[1:N]), P))
     kernel /= kernel.sum()
@@ -39,11 +39,11 @@ def wma(P: np.ndarray, kernel: np.ndarray):
     # return np.convolve(pad(P, N), kernel, "valid")
 
 
-def diff(short_signal: np.ndarray, long_signal: np.ndarray) -> np.ndarray:
+def diff_signal(short_signal: np.ndarray, long_signal: np.ndarray) -> np.ndarray:
     return short_signal - long_signal
 
 
-def buy_sell(signal: np.ndarray) -> np.ndarray:
+def buy_sell_signal(signal: np.ndarray) -> np.ndarray:
     """Buy when 1 and sell when -1."""
     output = np.zeros_like(signal)
     output[1:] = np.where((signal[:-1] > 0) & (signal[1:] <= 0), 1, output[1:])
@@ -52,7 +52,8 @@ def buy_sell(signal: np.ndarray) -> np.ndarray:
 
 
 def complex_signal(data, w1, w2, w3, d1, d2, d3, sf):
-    sma = wma(data, sma_filter(d1)) * w1
-    lma = wma(data, lma_filter(d2)) * w2
-    ema = wma(data, ema_filter(sf, d3)) * w3
+    """sma, lma, ema"""
+    sma = wma_signal(data, sma_filter(d1)) * w1 if w1 else 0
+    lma = wma_signal(data, lma_filter(d2)) * w2 if w2 else 0
+    ema = wma_signal(data, ema_filter(d3, sf)) * w3 if w3 else 0
     return (sma + lma + ema) / (w1 + w2 + w3)
