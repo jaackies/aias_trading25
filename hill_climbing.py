@@ -28,15 +28,15 @@ def hill_climbing(bot_type, bounds, max_iter=1000):
     elif bot_type.lower() == 'smaema':
         high_window = int(rng.integers(bounds[0][0],bounds[0][1]))
         low_window = int(rng.integers(bounds[1][0],bounds[1][1]))
-        alpha = rng.uniform(bounds[2][0], bounds[-1][1])
+        alpha = rng.uniform(bounds[2][0], bounds[2][1])
     elif bot_type.lower() == 'complex':
         # generate the values for high
         weight_sma_high= int(rng.integers(bounds[0][0],bounds[0][1]))
-        weight_lma_high= int(rng.integers(bounds[1][0],bounds[0][1]))
-        weight_ema_high= int(rng.integers(bounds[2][0],bounds[0][1]))
-        window_sma_high= int(rng.integers(bounds[3][0],bounds[0][1]))
-        window_lma_high= int(rng.integers(bounds[4][0],bounds[0][1]))
-        window_ema_high= int(rng.integers(bounds[5][0],bounds[0][1]))
+        weight_lma_high= int(rng.integers(bounds[1][0],bounds[1][1]))
+        weight_ema_high= int(rng.integers(bounds[2][0],bounds[2][1]))
+        window_sma_high= int(rng.integers(bounds[3][0],bounds[3][1]))
+        window_lma_high= int(rng.integers(bounds[4][0],bounds[4][1]))
+        window_ema_high= int(rng.integers(bounds[5][0],bounds[5][1]))
         alpha_high = rng.uniform(bounds[6][0], bounds[6][1])
         high_window = [weight_sma_high,weight_lma_high, weight_ema_high, window_sma_high, window_lma_high, window_ema_high, alpha_high]
         # generate the values for low
