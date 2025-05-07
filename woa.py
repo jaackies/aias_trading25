@@ -6,9 +6,8 @@ def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter
     history = []
     Init_whalses = np.array([np.random.uniform(low, high, num_agents) for (low, high) in bounds]).T #Initialize the whales positions (which are intial solutions)
     Int_whales = np.array([convert_array_for_fitness(individual, integer_dims) for individual in Init_whalses])
-    print(integer_dims)
     best = Int_whales[0].copy() #initialize optimal solution
-    print(best)
+    print(f"Initial best: {best}")
     params = convert_array_for_fitness(best, integer_dims)
     best_score = evaluate_function(fitness_func, bot_type, params)
     for i in range(num_agents): # compare to find the current optimal solution
@@ -58,6 +57,9 @@ def whale_optimization(fitness_func, bot_type, dim, bounds, num_agents, max_iter
     columns = ["Iteration", "Whale_ID"] + [f"Dim_{j}" for j in range(dim)] + ["Fitness", "Best_So_far"]
     df = pd.DataFrame(history, columns=columns)
     df.to_csv("woa_whale_log.csv", index=False)
+    if bot_type == "complex":
+        best = convert_array_for_fitness(best, integer_dims)
+        best = [best[:7],best[7:]]
     return best, best_score
 
 
