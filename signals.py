@@ -39,8 +39,20 @@ def wma(P: np.ndarray, kernel: np.ndarray):
     # return np.convolve(pad(P, N), kernel, "valid")
 
 
-def complex_freq(data, w1, w2, w3, d1, d2, d3, sf):
-    weights = np.array([w1, w2, w3])
-    kernels = np.array([sma_filter(d1), lma_filter(d2), ema_filter(sf, d3)])
-    vwma = np.vectorize(lambda kernel: wma(data, kernel))
-    return np.dot(weights, vwma(kernels)) / weights.sum()
+def diff(short_signal: np.ndarray, long_signal: np.ndarray) -> np.ndarray:
+    return short_signal - long_signal
+
+
+def buy_sell(signal: np.ndarray) -> np.ndarray:
+    """Buy when 1 and sell when -1."""
+    output = np.zeros_like(signal)
+    output[1:] = np.where((signal[:-1] > 0) & (signal[1:] <= 0), 1, output[1:])
+    output[1:] = np.where((signal[:-1] <= 0) & (signal[1:] > 0), -1, output[1:])
+    return output
+
+
+def complex_signal(data, w1, w2, w3, d1, d2, d3, sf):
+    sma = wma(data, sma_filter(d1)) * w1
+    lma = wma(data, lma_filter(d2)) * w2
+    ema = wma(data, ema_filter(sf, d3)) * w3
+    return (sma + lma + ema) / (w1 + w2 + w3)
