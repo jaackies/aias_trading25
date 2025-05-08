@@ -71,6 +71,7 @@ class BaseAlgo:
             # )
             self._algo_iter(iter_num)
 
+    def plot(self, title="Fitness Over Evaluations"):
         import plotly.graph_objects as go
 
         fig = go.Figure()
@@ -78,8 +79,8 @@ class BaseAlgo:
             go.Scatter(y=self.__fitness_at_evals, mode="lines", name="Fitness")
         )
         fig.update_layout(
-            title="Fitness Over Iterations",
-            xaxis_title="Iteration",
+            title=title,
+            xaxis_title="Evaluations",
             yaxis_title="Fitness",
             template="plotly_white",
         )

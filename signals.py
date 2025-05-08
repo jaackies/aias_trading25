@@ -4,14 +4,17 @@ import numpy as np
 
 
 def sma_filter(N: int) -> np.ndarray:
+    N = int(N)
     return np.ones(N)
 
 
 def lma_filter(N: int) -> np.ndarray:
+    N = int(N)
     return (np.full(N, 2) - (np.arange(N) / N)) / (N + np.ones(N))
 
 
 def ema_filter(N: int, sf: float) -> np.ndarray:
+    N = int(N)
     # sf = alpha = smoothing factor
     return np.full(N, sf) * np.power((np.ones(N) - np.full(N, sf)), np.arange(N))
 
