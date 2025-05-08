@@ -20,6 +20,36 @@ import pandas as pd
 #     return units
 
 
+# def sim_bot(buysell_signals, price, fee=0.03, cash=1000):
+#     indicies = np.nonzero(buysell_signals != "none")[0]
+#     bot_signals = buysell_signals
+#     close_price = pd.Series(price)
+
+#     # initial values
+#     bitcoin = 0.0
+
+#     # loop through the time length
+#     for i in range(min(len(bot_signals), len(close_price) - 1)):
+#         close = close_price[i]
+#         # buy
+#         if bot_signals[i] == "buy" and cash > 0:
+#             bitcoin = (cash * (1 - fee)) / close
+#             cash = 0
+#         # sell
+#         elif bot_signals[i] == "sell" and bitcoin > 0:
+#             cash = bitcoin * close * (1 - fee)
+#             bitcoin = 0
+
+#     # final evaluation to change back to cash
+#     last_close = close_price.iloc[-1]
+#     if bitcoin > 0:
+#         cash = bitcoin * last_close * (1 - fee)
+#         bitcoin = 0
+#         return cash
+#     elif cash > 0:
+#         return cash
+
+
 def sim_bot(buysell_signals, price, fee=0.03, cash=1000):
     bot_signals = buysell_signals
     close_price = pd.Series(price)
