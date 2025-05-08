@@ -34,15 +34,21 @@ class BaseAlgo:
     def name(self):
         return self.__class__.__name__
 
+    def _eval(self, candidate):
+        """
+        Evaluates the candidate solution and returns the fitness value.
+        """
+        self.__fitness_at_evals.append(self.best_fitness)
+        return self.__eval_func(candidate)
+
     def _eval_and_update(self, candidate):
         """
         Updates the best solution found so far if the candidate solution is better. Returns the fitness value of the candidate solution either way.
         """
-        fitness = self.__eval_func(candidate)
+        fitness = self._eval(candidate)
         if fitness > self.best_fitness:
             self.best_params = candidate.copy()
             self.best_fitness = fitness
-        self.__fitness_at_evals.append(self.best_fitness)
         return fitness
 
     def _algo_init(self, max_iter, **kwargs):

@@ -3,54 +3,56 @@ import numpy as np
 from algos.base import BaseAlgo
 
 
-class HC(BaseAlgo):
-    def _algo_init(self, _):
-        self.high_window = None
-        self.low_window = None
-        self.alpha = 0
-        self.new_high_frequency_window = high_window
-        self.new_low_frequency_window = low_window
-        self.new_alpha = 0
+class HC(BaseAlgo):  # steepest ascent hill climbing with replacement
+    def _algo_init(self, _, no_of_tweaks=10):
+        self._eval_and_update(
+            [
+                (
+                    self.rand_gen.integers
+                    if i in self.integer_dims
+                    else self.rand_gen.uniform
+                )(low, high)
+                for i, (low, high) in enumerate(self.bounds)
+            ]
+        )
 
-        self.high_window = [
-            (
-                self.rand_gen.integers
-                if i in self.integer_dims
-                else self.rand_gen.uniform
-            )(low, high)
-            for i, (low, high) in enumerate(self.bounds)
-        ]
+        self.S = self.best_params
+        self.S_fitness = self.best_fitness
+
+        self.no_of_tweaks = no_of_tweaks
 
     def _algo_iter(self, _):
-        for i in range(self.num_agents):
-            r, p = self.rand_gen.random(2)
-            A = 2 * self.a * r - self.a  # Update A
-            C = 2 * r  # Update C
+        R = self.tweak(self.S)
+        R_fitness = self._eval(R)
+        for _ in range(self.no_of_tweaks):
+            W = self.tweak(R)
+            W_fitness = self._eval(W)
+            if W_fitness > R_fitness:
+                R = W
+                R_fitness = W_fitness
+        if R_fitness > self.S_fitness:
+            self.S = R
+            self.S_fitness = R_fitness
+        if self.S_fitness > self.best_fitness:
+            self.best_params = self.S
+            self.best_fitness = self.S_fitness
 
-            if p < 0.5:
-                if np.linalg.norm(A) >= 1:  # Exploration phase
-                    X_rand = self.X[self.rand_gen.integers(0, self.num_agents)]
-                    D = np.abs(C * X_rand - self.X[i])
-                    self.X[i] = X_rand - A * D
-                else:  # Exploitation phase - Shrinking encircling mechanism
-                    D = np.abs(C * self.best_params - self.X[i])
-                    self.X[i] = self.best_params - A * D
-            else:  # if p >= 0.5；Exploitation phase - Spiral updating position
-                D = np.abs(self.best_params - self.X[i])
-                b = 1
-                l = self.rand_gen.uniform(-1, 1, self.dim)
-                self.X[i] = D * np.exp(b * l) * np.cos(2 * np.pi * l) + self.best_params
+    def tweak(self, v: list, r=None, p=1):  # bounded uniform convolution
+        if r is None:
+            r = 0.1 * (self.bounds[0][1] - self.bounds[0][0])
 
-            # Check if any search agent goes beyond the search space and amend it
-            for d in range(self.dim):
-                self.X[i][d] = np.clip(
-                    self.X[i][d], self.bounds[d][0], self.bounds[d][1]
-                )
-                if d in self.integer_dims:
-                    self.X[i][d] = int(round(self.X[i][d]))
+        mod_params = v.copy()
 
-            # Calculate the fitness of each search agent
-            score = self._eval_and_update(self.X[i])
-            # print(f"\tWhale: {i}, Score: {score}, Solution: {self.X[i]}")
+        for i in range(len(mod_params)):
+            if p >= self.rand_gen.uniform(0, 1):
+                while True:
+                    n = self.rand_gen.uniform(-r, r)
+                    lbound, hbound = self.bounds[i]
+                    potential = mod_params[i] + n
+                    if i in self.integer_dims:
+                        potential = int(potential)
+                    if lbound <= potential <= hbound:
+                        mod_params[i] = potential
+                        break
 
-        self.a -= self.a_dec_v
+        return mod_params
