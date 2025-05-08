@@ -24,6 +24,8 @@ class BaseAlgo:
 
         self.rand_gen = np.random.default_rng(seed)
 
+        self.__fitness_at_evals = [0]
+
     @property
     def dim(self):
         return len(self.bounds)
@@ -40,6 +42,7 @@ class BaseAlgo:
         if fitness > self.best_fitness:
             self.best_params = candidate.copy()
             self.best_fitness = fitness
+        self.__fitness_at_evals.append(self.best_fitness)
         return fitness
 
     def _algo_init(self, max_iter, **kwargs):
@@ -54,10 +57,24 @@ class BaseAlgo:
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
-    def optimise(self, max_iter=50, **kwargs):
+    def optimise(self, max_iter=100, **kwargs):
         self._algo_init(max_iter, **kwargs)
         for iter_num in range(max_iter):
             # print(
             #     f"Iteration {iter_num + 1}/{max_iter}, Best Solution: {self.best}, Best Fitness: {self.best_fitness}"
             # )
             self._algo_iter(iter_num)
+
+        import plotly.graph_objects as go
+
+        fig = go.Figure()
+        fig.add_trace(
+            go.Scatter(y=self.__fitness_at_evals, mode="lines", name="Fitness")
+        )
+        fig.update_layout(
+            title="Fitness Over Iterations",
+            xaxis_title="Iteration",
+            yaxis_title="Fitness",
+            template="plotly_white",
+        )
+        fig.show()

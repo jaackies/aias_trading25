@@ -13,7 +13,7 @@ class KaggleDataset:
             pandas_kwargs={
                 "usecols": ["unix", "close"],
             },
-        )
+        )[::-1]
         self.df["date"] = pd.to_datetime(self.df["unix"], unit="s")
         self.df = self.df.drop(columns=["unix"])
 

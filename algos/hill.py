@@ -3,35 +3,23 @@ import numpy as np
 from algos.base import BaseAlgo
 
 
-class WOA(BaseAlgo):
-    """
-    Whale Optimization Algorithm (WOA) for optimization problems.
-    """
+class HC(BaseAlgo):
+    def _algo_init(self, _):
+        self.high_window = None
+        self.low_window = None
+        self.alpha = 0
+        self.new_high_frequency_window = high_window
+        self.new_low_frequency_window = low_window
+        self.new_alpha = 0
 
-    def _algo_init(self, max_iter, *, num_agents=10):
-        """
-        Initialize the WOA algorithm with the given parameters.
-        :param max_iter: Maximum number of iterations.
-        :param num_agents: Number of agents (whales).
-        :param integer_dims: List of indices for dimensions that should be treated as integers.
-        """
-        self.num_agents = num_agents
-
-        self.a = 2
-        self.a_dec_v = 2 / max_iter
-        # Initialize the whales positions (which are initial solutions)
-        self.X = np.array(
-            [
-                (
-                    self.rand_gen.integers
-                    if i in self.integer_dims
-                    else self.rand_gen.uniform
-                )(low, high, num_agents)
-                for i, (low, high) in enumerate(self.bounds)
-            ]
-        ).T
-        for i in range(num_agents):
-            self._eval_and_update(self.X[i])
+        self.high_window = [
+            (
+                self.rand_gen.integers
+                if i in self.integer_dims
+                else self.rand_gen.uniform
+            )(low, high)
+            for i, (low, high) in enumerate(self.bounds)
+        ]
 
     def _algo_iter(self, _):
         for i in range(self.num_agents):
