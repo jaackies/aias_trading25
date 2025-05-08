@@ -1,5 +1,7 @@
 import numpy as np
 
+# UTILS
+
 
 def sma_filter(N: int) -> np.ndarray:
     return np.ones(N)
@@ -19,6 +21,9 @@ def pad(P: np.ndarray, N: int) -> np.ndarray:
     # and N is the window size
     padding = -np.flip(P[1:N])
     return np.concatenate((padding, P))
+
+
+# SIGNALS
 
 
 def wma_signal(P: np.ndarray, kernel: np.ndarray):
@@ -54,3 +59,35 @@ def complex_signal(data: np.ndarray, w1, w2, w3, d1, d2, d3, sf):
     if out is np.nan:
         print(sma, lma, ema)
     return out
+
+
+# BOT SIGNALS
+
+
+def sma2_bot_signal(data, highN, lowN):
+    # get buy and sell signals by using two SMA filters
+    # one with window size highN that is small for high freq signal
+    # one with window size lowN that is larger for low freq signal
+    high_signal = wma_signal(data, sma_filter(highN))
+    low_signal = wma_signal(data, sma_filter(lowN))
+    return buysell_signals(high_signal, low_signal)
+
+
+def smaema_bot_signal(data, EN, lowN, Esf):
+    # get buy and sell signals by using a
+    # SMA filter for low freq (lowN = larger window size) and
+    # EMA for high frequency (EN = smaller window size, Esf = smoothing factor)
+    high_signal = wma_signal(data, ema_filter(EN, Esf))
+    low_signal = wma_signal(data, sma_filter(lowN))
+    return buysell_signals(high_signal, low_signal)
+
+
+def complex_bot_signal(data, *params):
+    high, low = params[:7], params[7:]
+    # high and low are arrays [w1, w2, w3, d1, d2, d3, sf], defining parameters of
+    # weight, length of windows and smoothing factors of the complex frequency
+    # high is the array defining the paramters for high frequency
+    # low is the array defining the parameteres for low frequency
+    high_signal = complex_signal(data, *high)
+    low_signal = complex_signal(data, *low)
+    return buysell_signals(high_signal, low_signal)
