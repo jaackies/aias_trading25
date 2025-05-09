@@ -7,7 +7,13 @@ class BaseAlgo:
     """
 
     def __init__(
-        self, eval_func, bounds, integer_dims: frozenset = frozenset(), seed=None
+        self,
+        eval_func,
+        *,
+        bounds,
+        integer_dims: frozenset = frozenset(),
+        seed=None,
+        max_iter=1000,
     ):
         """
 
@@ -15,6 +21,7 @@ class BaseAlgo:
 
         Lower bound inclusive, upper bound exclusive.
         """
+        self.max_iter = max_iter
         self.__eval_func = eval_func  # Function takes in an array of parameters and returns a fitness value
         self.bounds = bounds
         self.integer_dims = integer_dims
@@ -34,24 +41,14 @@ class BaseAlgo:
     def name(self):
         return self.__class__.__name__
 
-    def _eval(self, candidate):
+    def eval(self, candidate):
         """
         Evaluates the candidate solution and returns the fitness value.
         """
         self.__fitness_at_evals.append(self.best_fitness)
         return self.__eval_func(candidate)
 
-    def _eval_and_update(self, candidate):
-        """
-        Updates the best solution found so far if the candidate solution is better. Returns the fitness value of the candidate solution either way.
-        """
-        fitness = self._eval(candidate)
-        if fitness > self.best_fitness:
-            self.best_params = candidate.copy()
-            self.best_fitness = fitness
-        return fitness
-
-    def _algo_init(self, max_iter, **kwargs):
+    def _algo_init(self, **kwargs):
         """
         This method should be overridden by subclasses to define the initialization of the algorithm.
         """
@@ -63,13 +60,10 @@ class BaseAlgo:
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
-    def optimise(self, max_iter=100, **kwargs):
-        self._algo_init(max_iter, **kwargs)
-        for iter_num in range(max_iter):
-            # print(
-            #     f"Iteration {iter_num + 1}/{max_iter}, Best Solution: {self.best}, Best Fitness: {self.best_fitness}"
-            # )
-            self._algo_iter(iter_num)
+    def optimise(self, **kwargs):
+        self._algo_init(self.max_iter, **kwargs)
+        for i in range(self.max_iter):
+            self._algo_iter(i)
 
     def plot(self, title="Fitness Over Evaluations"):
         import plotly.graph_objects as go
@@ -85,3 +79,31 @@ class BaseAlgo:
             template="plotly_white",
         )
         fig.show()
+
+
+class BasePopAlgo(BaseAlgo):
+    """
+    Base class for all population-based optimisation algorithms.
+    """
+
+    def __init__(
+        self,
+        eval_func,
+        bounds,
+        integer_dims=frozenset(),
+        seed=None,
+        pop_size=10,
+        max_iter=100,
+    ):
+        super().__init__(eval_func, bounds, integer_dims, seed, max_iter)
+        self.pop = np.array(
+            (
+                self.rand_gen.integers
+                if i in self.integer_dims
+                else self.rand_gen.uniform
+            )(low, high, pop_size)
+            for i, (low, high) in enumerate(self.bounds)
+        ).T
+        self.pop_fitness = np.array([self.eval(p) for p in self.pop])
+        self.best_params = self.pop[np.argmax(self.pop_fitness)]
+        self.best_fitness = np.max(self.pop_fitness)
