@@ -1,42 +1,13 @@
-from algos.base import BaseAlgo
+from algos.base import BasePopAlgo
 import numpy as np
 
 
-class PSO(BaseAlgo):
+class PSO(BasePopAlgo):
     """
     Particle Swarm Optimisation (PSO) algorithm.
     """
 
-    def __init_particles(self, num_particles):
-        """
-        Initialize the particles in the swarm.
-        :param num_particles: Number of particles in the swarm.
-        """
-        particles = []
-        for _ in range(num_particles):
-            position = [
-                (
-                    self.rand_gen.integers
-                    if i in self.integer_dims
-                    else self.rand_gen.uniform
-                )(low, high)
-                for i, (low, high) in enumerate(self.bounds)
-            ]
-            velocity = [
-                self.rand_gen.uniform(-np.abs(high - low), np.abs(high - low))
-                for low, high in self.bounds
-            ]
-            particles.append(
-                {
-                    "position": position,
-                    "velocity": velocity,
-                    "best_position": position.copy(),
-                    "best_fitness": -np.inf,
-                }
-            )
-        return particles
-
-    def _algo_init(self, _, *, num_particles=30):
+    def _algo_init(self):
         """
         Initialize the PSO algorithm with the given parameters.
         :param num_particles: Number of particles in the swarm.
@@ -45,37 +16,46 @@ class PSO(BaseAlgo):
         self.c1 = 1.5  # Cognitive parameter
         self.c2 = 1.5  # Social parameter
 
-        self.particles = self.__init_particles(num_particles)
+        self.pop_velocity = np.array(
+            [
+                self.rand_gen.uniform(
+                    -np.abs(high - low), np.abs(high - low), self.pop_size
+                )
+                for low, high in self.bounds
+            ]
+        ).T
+        self.pop_best_params = self.pop.copy()
+        self.pop_best_fitness = self.pop_fitness.copy()
 
     def _algo_iter(self, _):
-        for particle in self.particles:
-            # Evaluate fitness and update global best
-            fitness_value = self._eval_and_update(particle["position"])
-
-            # Update particle's best
-            if fitness_value > particle["best_fitness"]:
-                particle["best_fitness"] = fitness_value
-                particle["best_position"] = particle["position"].copy()
-
-        # Update velocities and positions
-        for particle in self.particles:
-            for i in range(len(particle["position"])):
+        for i in range(self.pop_size):  # each particle
+            # each param
+            for ii in range(len(self.bounds)):
+                # Update velocity
                 r1, r2 = self.rand_gen.random(2)
-                particle["velocity"][i] = (
-                    self.w * particle["velocity"][i]
-                    + self.c1
-                    * r1
-                    * (particle["best_position"][i] - particle["position"][i])
-                    + self.c2 * r2 * (self.best_params[i] - particle["position"][i])
+                self.pop_velocity[i][ii] = (
+                    self.w * self.pop_velocity[i][ii]
+                    + self.c1 * r1 * (self.pop_best_params[i][ii] - self.pop[i][ii])
+                    + self.c2 * r2 * (self.best_params[ii] - self.pop[i][ii])
                 )
 
                 # Update position
-                particle["position"][i] += particle["velocity"][i]
+                self.pop[i][ii] += self.pop_velocity[i][ii]
 
                 # Bound the position
-                particle["position"][i] = max(
-                    self.bounds[i][0],
-                    min(self.bounds[i][1], particle["position"][i]),
+                self.pop[i][ii] = max(
+                    self.bounds[ii][0],
+                    min(self.bounds[ii][1], self.pop[i][ii]),
                 )
-                if i in self.integer_dims:  # fast_sma and slow_sma should be integers
-                    particle["position"][i] = round(particle["position"][i])
+                if ii in self.integer_dims:
+                    self.pop[i][ii] = round(self.pop[i][ii])
+
+            # Evaluate fitness and update global best
+            self.pop_fitness[i] = self.eval(self.pop[i])
+            if self.pop_fitness[i] > self.best_fitness:
+                self.best_params = self.pop[i]
+                self.best_fitness = self.pop_fitness[i]
+            # Update the best parameters for each particle
+            if self.pop_fitness[i] > self.pop_best_fitness[i]:
+                self.pop_best_params[i] = self.pop[i]
+                self.pop_best_fitness[i] = self.pop_fitness[i]

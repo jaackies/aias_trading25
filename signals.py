@@ -59,8 +59,7 @@ def complex_signal(data: np.ndarray, w1, w2, w3, d1, d2, d3, sf):
     lma = wma_signal(data, lma_filter(d2)) * w2 if w2 > 0 else 0
     ema = wma_signal(data, ema_filter(d3, sf)) * w3 if w3 > 0 else 0
     out = (sma + lma + ema) / summed_weights
-    if out is np.nan:
-        print(sma, lma, ema)
+    assert out is not np.nan
     return out
 
 

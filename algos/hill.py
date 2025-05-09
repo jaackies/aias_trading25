@@ -4,29 +4,28 @@ from algos.base import BaseAlgo
 
 
 class HC(BaseAlgo):  # steepest ascent hill climbing with replacement
-    def _algo_init(self, _, no_of_tweaks=10):
-        self._eval_and_update(
-            [
-                (
-                    self.rand_gen.integers
-                    if i in self.integer_dims
-                    else self.rand_gen.uniform
-                )(low, high)
-                for i, (low, high) in enumerate(self.bounds)
-            ]
-        )
+    def _algo_init(self, no_of_additional_tweaks=0):
+        self.best_params = [
+            (
+                self.rand_gen.integers
+                if i in self.integer_dims
+                else self.rand_gen.uniform
+            )(low, high)
+            for i, (low, high) in enumerate(self.bounds)
+        ]
+        self.best_fitness = self.eval(self.best_params)
 
         self.S = self.best_params
         self.S_fitness = self.best_fitness
 
-        self.no_of_tweaks = no_of_tweaks
+        self.no_of_additional_tweaks = no_of_additional_tweaks
 
     def _algo_iter(self, _):
         R = self.tweak(self.S)
-        R_fitness = self._eval(R)
-        for _ in range(self.no_of_tweaks):
+        R_fitness = self.eval(R)
+        for _ in range(self.no_of_additional_tweaks):
             W = self.tweak(R)
-            W_fitness = self._eval(W)
+            W_fitness = self.eval(W)
             if W_fitness > R_fitness:
                 R = W
                 R_fitness = W_fitness
@@ -37,9 +36,8 @@ class HC(BaseAlgo):  # steepest ascent hill climbing with replacement
             self.best_params = self.S
             self.best_fitness = self.S_fitness
 
-    def tweak(self, v: list, r=None, p=1):  # bounded uniform convolution
-        if r is None:
-            r = 0.1 * (self.bounds[0][1] - self.bounds[0][0])
+    def tweak(self, v: list, r_percent=0.1, p=1):  # bounded uniform convolution
+        r = r_percent * (self.bounds[0][1] - self.bounds[0][0])
 
         mod_params = v.copy()
 
