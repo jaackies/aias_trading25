@@ -29,7 +29,7 @@ class BaseAlgo:
         self.integer_dims = integer_dims
         self.rand_gen = np.random.default_rng(seed)
 
-        self.historical_best_fitness = []  # SHOULDN'T BE TOUCHED BY SUBCLASSES
+        self.historical_best_params = []  # SHOULDN'T BE TOUCHED BY SUBCLASSES
 
     @property
     def dim(self):
@@ -68,11 +68,10 @@ class BaseAlgo:
         self._algo_init()
         for i in range(self.max_iter):
             self._algo_iter(i)
-        self.historical_best_fitness.append(self.best_fitness)
+        self.historical_best_params.append(self.best_params)
 
-    @property
-    def historical_best_fitness_mean(self):
-        return np.mean(self.historical_best_fitness)
+    def historical_best_params_fitness(self, eval_fn):
+        return [eval_fn(p) for p in self.historical_best_params]
 
     def plot(self):
         import plotly.graph_objects as go
